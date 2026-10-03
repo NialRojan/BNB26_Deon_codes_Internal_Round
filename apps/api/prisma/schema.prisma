@@ -1,0 +1,173 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Owner {
+  id                String             @id @default(uuid())
+  externalReference String             @unique
+  status            String             @default("ACTIVE")
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  availability      OwnerAvailability?
+  heartbeatEvents   HeartbeatEvent[]
+  recoveryAttempts  RecoveryAttempt[]
+  alerts            Alert[]
+
+  @@index([status])
+}
+
+model OwnerAvailability {
+  id                    String    @id @default(uuid())
+  ownerId               String    @unique
+  state                 String    @default("ACTIVE") // ACTIVE | CHECK_IN_PENDING | MISSED | WATCH
+  lastHeartbeatAt       DateTime?
+  nextCheckInDueAt      DateTime?
+  heartbeatIntervalDays Int       @default(30)
+  gracePeriodDays       Int       @default(7)
+  missedCount           Int       @default(0)
+  stateReason           String?
+  updatedAt             DateTime  @updatedAt
+
+  owner                 Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([state])
+  @@index([nextCheckInDueAt])
+}
+
+model HeartbeatEvent {
+  id              String   @id @default(uuid())
+  ownerId         String
+  channel         String   // WHATSAPP | PUSH | EMAIL | APP_CHECKIN | etc.
+  eventType       String   // SCHEDULED_PING | MANUAL_CHECKIN | APP_FOREGROUND | RESPONSE_RECEIVED | MISSED_PING
+  timestamp       DateTime @default(now())
+  responseStatus  String   @default("RECEIVED") // RECEIVED | PENDING | EXPIRED | FAILED
+  externalEventId String?  @unique
+  metadata        String?  // JSON string
+  createdAt       DateTime @default(now())
+
+  owner           Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, timestamp])
+}
+
+model RecoveryAttempt {
+  id           String                @id @default(uuid())
+  ownerId      String
+  initiatedAt  DateTime              @default(now())
+  status       String                @default("PENDING") // PENDING | UNDER_REVIEW | APPROVED | REJECTED | CANCELLED | COMPLETED
+  reason       String
+  source       String                // GUARDIAN_INITIATED | AUTOMATIC_WATCH_ESCALATION | HEIR_REQUEST | etc.
+  riskScore    Float                 @default(0.0)
+  riskLevel    String                @default("UNKNOWN") // UNKNOWN | LOW | MEDIUM | HIGH
+  cancelledAt  DateTime?
+  cancelReason String?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  owner        Owner                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  attestations GuardianAttestation[]
+  riskEvents   RiskEvent[]
+  alerts       Alert[]
+  documents    ClaimDocument[]
+
+  @@index([ownerId, status])
+  @@index([status])
+}
+
+model ClaimDocument {
+  id                 String           @id @default(uuid())
+  recoveryAttemptId  String
+  documentType       String           // DEATH_CERTIFICATE | MEDICAL_ATTESTATION | COURT_ORDER
+  documentHash       String           // SHA-256 hash or IPFS CID
+  issuingAuthority   String
+  jurisdiction       String
+  documentDate       DateTime
+  receivedAt         DateTime         @default(now())
+  submittedBy        String
+  verificationStatus String           @default("PENDING_VERIFICATION") // PENDING_VERIFICATION | VERIFIED | REJECTED | FLAGGED_INCONSISTENCY
+  rejectionReason    String?
+  rawContent         String?          // Base64 or string content for server hash validation
+  metadata           String?          // JSON metadata
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  recoveryAttempt    RecoveryAttempt  @relation(fields: [recoveryAttemptId], references: [id], onDelete: Cascade)
+
+  @@index([recoveryAttemptId])
+  @@index([verificationStatus])
+}
+
+model GuardianAttestation {
+  id                String          @id @default(uuid())
+  recoveryAttemptId String
+  guardianId        String
+  timestamp         DateTime        @default(now())
+  status            String          @default("SUBMITTED") // PENDING | SUBMITTED | VALID | INVALID | REVOKED
+  signature         String?
+  metadata          String?         // JSON string
+  createdAt         DateTime        @default(now())
+
+  recoveryAttempt   RecoveryAttempt @relation(fields: [recoveryAttemptId], references: [id], onDelete: Cascade)
+
+  @@unique([recoveryAttemptId, guardianId])
+  @@index([recoveryAttemptId])
+  @@index([guardianId])
+}
+
+model RiskEvent {
+  id                String          @id @default(uuid())
+  recoveryAttemptId String
+  type              String          // TRIGGER_ANOMALY | GUARDIAN_COLLUSION | BEHAVIOR_DEVIATION | UNEXPECTED_LOCATION | ACCOUNT_RESET | DOCUMENT_ANOMALY
+  severity          String          // LOW | MEDIUM | HIGH | CRITICAL
+  score             Float
+  timestamp         DateTime        @default(now())
+  metadata          String?         // JSON string
+  createdAt         DateTime        @default(now())
+
+  recoveryAttempt   RecoveryAttempt @relation(fields: [recoveryAttemptId], references: [id], onDelete: Cascade)
+
+  @@index([recoveryAttemptId, timestamp])
+  @@index([type])
+}
+
+model Alert {
+  id                String           @id @default(uuid())
+  ownerId           String
+  recoveryAttemptId String?
+  type              String           // HEARTBEAT_REMINDER | HEARTBEAT_MISSED | WATCH_ENTERED | RECOVERY_INITIATED | GUARDIAN_ACTION_REQUIRED | HIGH_RISK_DETECTED
+  severity          String           // INFO | WARNING | CRITICAL
+  recipient         String
+  channel           String           // EMAIL | SMS | WHATSAPP | PUSH | IN_APP
+  status            String           @default("PENDING") // PENDING | SENT | FAILED | DISMISSED
+  sentAt            DateTime?
+  metadata          String?          // JSON string
+  createdAt         DateTime         @default(now())
+
+  owner             Owner            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  recoveryAttempt   RecoveryAttempt? @relation(fields: [recoveryAttemptId], references: [id], onDelete: SetNull)
+
+  @@index([ownerId, status])
+  @@index([ownerId, type, channel, status])
+}
+
+model AuditEvent {
+  id         String   @id @default(uuid())
+  eventType  String   // OWNER_CREATED | HEARTBEAT_RECEIVED | HEARTBEAT_MISSED | OWNER_ENTERED_WATCH | RECOVERY_INITIATED | GUARDIAN_ATTESTATION_RECEIVED | RISK_EVENT_CREATED | ALERT_SENT | OWNER_VETO_RECEIVED
+  actorId    String
+  actorType  String   // OWNER | GUARDIAN | SYSTEM | ADMIN
+  timestamp  DateTime @default(now())
+  entityId   String
+  entityType String   // Owner | HeartbeatEvent | RecoveryAttempt | GuardianAttestation | RiskEvent | Alert
+  metadata   String?  // JSON string
+  createdAt  DateTime @default(now())
+
+  @@index([entityId])
+  @@index([eventType])
+  @@index([timestamp])
+}
