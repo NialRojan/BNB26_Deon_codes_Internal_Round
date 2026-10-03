@@ -11,12 +11,20 @@ export const deployments = {
   sepolia: {
     chainId: SEPOLIA_CHAIN_ID,
     entryPoint: "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
-    factory: "0xb99c8F7257Cf03ACDd019EFe7C86bbfCb1d513B3",
-    demoVault: "0x8085f0EF193B9dD3F7501394bD3d054c045aB575",
-    /** Same setup as demoVault; use for rehearsals so the pitch vault stays untouched. */
-    rehearsalVault: "0x0B4E0D3a3c756533acbfe1e64196eA7B731D2bB9",
+    /** v2 factory (estate plans, gasless guardian votes, clones). Filled in after deployment. */
+    factory: "0x0000000000000000000000000000000000000000",
+    /** v2 pitch/demo vault. Filled in after creation. */
+    demoVault: "0x0000000000000000000000000000000000000000",
+    /** v2 rehearsal vault. Filled in after creation. */
+    rehearsalVault: "0x0000000000000000000000000000000000000000",
     /** Tamper-evidence anchor for the backend audit log. */
     auditAnchor: "0x13842d3635883c55045c8EF37e0DcBdb2485ae36",
+    /** Superseded v1 contracts (single default split), kept for the record. */
+    v1: {
+      factory: "0xb99c8F7257Cf03ACDd019EFe7C86bbfCb1d513B3",
+      demoVault: "0x8085f0EF193B9dD3F7501394bD3d054c045aB575",
+      rehearsalVault: "0x0B4E0D3a3c756533acbfe1e64196eA7B731D2bB9",
+    },
   },
 } as const;
 

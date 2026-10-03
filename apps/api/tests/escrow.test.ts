@@ -11,13 +11,14 @@ const wallet = () => privateKeyToAccount(generatePrivateKey());
 const owner = wallet();
 const guardians = [wallet(), wallet(), wallet()];
 const heir = wallet();
+const heir2 = wallet();
 const stranger = wallet();
 
 let executed = false;
 const chain: EscrowChain = {
   isExecuted: async () => executed,
   isGuardian: async (_v: string, who: string) => guardians.some((g) => g.address.toLowerCase() === who.toLowerCase()),
-  isBeneficiary: async (_v: string, who: string) => who.toLowerCase() === heir.address.toLowerCase(),
+  isBeneficiary: async (_v: string, who: string) => [heir, heir2].some((h) => h.address.toLowerCase() === who.toLowerCase()),
   ownerOf: async () => owner.address,
 };
 const app = express().use(express.json({ limit: "1mb" })).use("/escrow", createEscrowRouter(chain));
@@ -97,6 +98,39 @@ describe("Key escrow gated by HeirloomVault.isExecuted()", () => {
     const sealed = await escrow.sealSecret("x", keys, 2);
     const sig = await stranger.signMessage({ message: escrowMessages.sealSecret(VAULT, "X", sealed.asset, sealed.shares) });
     const res = await request(app).post("/escrow/secrets").send({ vaultAddress: VAULT, label: "X", asset: sealed.asset, threshold: 2, shares: sealed.shares, signature: sig });
+    expect(res.status).toBe(401);
+  });
+
+  it("a secret left to one heir is never released to, or listed for, another heir", async () => {
+    const g = await Promise.all(guardians.map((acct) => registerKey(acct, "GUARDIAN")));
+    const h1 = await registerKey(heir, "HEIR");
+    const h2 = await registerKey(heir2, "HEIR");
+    const keys = (await request(app).get(`/escrow/keys?vault=${VAULT}`)).body.data as { address: string; role: string; publicKey: string }[];
+    const sealed = await escrow.sealSecret("business logins", keys.filter((k) => k.role === "GUARDIAN"), 2);
+    const recipients = [heir.address.toLowerCase()];
+    const sig = await owner.signMessage({ message: escrowMessages.sealSecret(VAULT, "Business", sealed.asset, sealed.shares, recipients) });
+    const res = await request(app).post("/escrow/secrets").send({ vaultAddress: VAULT, label: "Business", asset: sealed.asset, threshold: 2, shares: sealed.shares, recipients, signature: sig });
+    expect(res.status).toBe(201);
+    const id = res.body.data.id;
+    expect((await request(app).get(`/escrow/secrets?vault=${VAULT}`)).body.data[0].recipients).toEqual(recipients);
+
+    executed = true;
+    const held = (await request(app).get(`/escrow/secrets?vault=${VAULT}`)).body.data[0].held.find((x: { guardian: string }) => x.guardian === guardians[0]!.address.toLowerCase()).encryptedShare;
+    const toHeir2 = await escrow.releaseShare(held, g[0]!.pair.privateKey, [{ address: heir2.address, publicKey: h2.publicKey }]);
+    const sig2 = await guardians[0]!.signMessage({ message: escrowMessages.releaseShare(id, guardians[0]!.address, toHeir2) });
+    const denied = await request(app).post(`/escrow/secrets/${id}/release`).send({ guardian: guardians[0]!.address, releases: toHeir2, signature: sig2 });
+    expect(denied.status).toBe(403);
+
+    expect((await request(app).get(`/escrow/released?vault=${VAULT}&heir=${heir2.address}`)).body.data).toHaveLength(0);
+    expect((await request(app).get(`/escrow/released?vault=${VAULT}&heir=${heir.address}`)).body.data).toHaveLength(1);
+    void h1;
+  });
+
+  it("the owner's signature covers the recipient list (it cannot be widened afterwards)", async () => {
+    const keys = await Promise.all(guardians.map(async (acct) => ({ address: acct.address, publicKey: (await registerKey(acct, "GUARDIAN")).publicKey })));
+    const sealed = await escrow.sealSecret("x", keys, 2);
+    const sig = await owner.signMessage({ message: escrowMessages.sealSecret(VAULT, "X", sealed.asset, sealed.shares, [heir.address.toLowerCase()]) });
+    const res = await request(app).post("/escrow/secrets").send({ vaultAddress: VAULT, label: "X", asset: sealed.asset, threshold: 2, shares: sealed.shares, recipients: [heir.address, heir2.address], signature: sig });
     expect(res.status).toBe(401);
   });
 });

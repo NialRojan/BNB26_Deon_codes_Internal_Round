@@ -7,65 +7,6 @@ export const heirloomVaultAbi = [
         "name": "anEntryPoint",
         "type": "address",
         "internalType": "contract IEntryPoint"
-      },
-      {
-        "name": "cfg",
-        "type": "tuple",
-        "internalType": "struct HeirloomVault.Config",
-        "components": [
-          {
-            "name": "owner",
-            "type": "address",
-            "internalType": "address"
-          },
-          {
-            "name": "executor",
-            "type": "address",
-            "internalType": "address"
-          },
-          {
-            "name": "guardians",
-            "type": "address[]",
-            "internalType": "address[]"
-          },
-          {
-            "name": "requiredSignatures",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "beneficiaries",
-            "type": "tuple[]",
-            "internalType": "struct HeirloomVault.Beneficiary[]",
-            "components": [
-              {
-                "name": "wallet",
-                "type": "address",
-                "internalType": "address"
-              },
-              {
-                "name": "bps",
-                "type": "uint16",
-                "internalType": "uint16"
-              }
-            ]
-          },
-          {
-            "name": "inactivityThreshold",
-            "type": "uint64",
-            "internalType": "uint64"
-          },
-          {
-            "name": "vetoGracePeriod",
-            "type": "uint64",
-            "internalType": "uint64"
-          },
-          {
-            "name": "assetMapCID",
-            "type": "string",
-            "internalType": "string"
-          }
-        ]
       }
     ],
     "stateMutability": "nonpayable"
@@ -73,6 +14,32 @@ export const heirloomVaultAbi = [
   {
     "type": "receive",
     "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "ATTEST_TYPEHASH",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "DEFAULT_PLAN",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -89,7 +56,7 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "function",
-    "name": "MAX_BENEFICIARIES",
+    "name": "MAX_ALLOCATIONS",
     "inputs": [],
     "outputs": [
       {
@@ -103,6 +70,32 @@ export const heirloomVaultAbi = [
   {
     "type": "function",
     "name": "MAX_GUARDIANS",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "MAX_NFT_RULES",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "MAX_TOKEN_PLANS",
     "inputs": [],
     "outputs": [
       {
@@ -148,8 +141,50 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "function",
+    "name": "attestDigest",
+    "inputs": [
+      {
+        "name": "deadline",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "attestGuardian",
     "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "attestGuardianWithSig",
+    "inputs": [
+      {
+        "name": "guardian",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "deadline",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "signature",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
     "outputs": [],
     "stateMutability": "nonpayable"
   },
@@ -168,25 +203,6 @@ export const heirloomVaultAbi = [
         "name": "",
         "type": "uint256",
         "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "beneficiaryBps",
-    "inputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint16",
-        "internalType": "uint16"
       }
     ],
     "stateMutability": "view"
@@ -230,6 +246,24 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "function",
+    "name": "claimNft",
+    "inputs": [
+      {
+        "name": "collection",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "tokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "claimable",
     "inputs": [
       {
@@ -239,25 +273,6 @@ export const heirloomVaultAbi = [
       },
       {
         "name": "heir",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "claimedBps",
-    "inputs": [
-      {
-        "name": "token",
         "type": "address",
         "internalType": "address"
       }
@@ -293,6 +308,92 @@ export const heirloomVaultAbi = [
         "name": "",
         "type": "uint8",
         "internalType": "enum HeirloomVault.VaultState"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "distribute",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "paid",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "eip712Domain",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "fields",
+        "type": "bytes1",
+        "internalType": "bytes1"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "version",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "chainId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "verifyingContract",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "salt",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "extensions",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "entitlement",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "heir",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "total",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "stateMutability": "view"
@@ -404,31 +505,6 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "function",
-    "name": "getBeneficiaries",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "tuple[]",
-        "internalType": "struct HeirloomVault.Beneficiary[]",
-        "components": [
-          {
-            "name": "wallet",
-            "type": "address",
-            "internalType": "address"
-          },
-          {
-            "name": "bps",
-            "type": "uint16",
-            "internalType": "uint16"
-          }
-        ]
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "getDeposit",
     "inputs": [],
     "outputs": [
@@ -455,6 +531,41 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "function",
+    "name": "getNftRules",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "rules",
+        "type": "tuple[]",
+        "internalType": "struct HeirloomVault.NftRule[]",
+        "components": [
+          {
+            "name": "collection",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "tokenId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "beneficiary",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "unlockAt",
+            "type": "uint64",
+            "internalType": "uint64"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getNonce",
     "inputs": [],
     "outputs": [
@@ -462,6 +573,65 @@ export const heirloomVaultAbi = [
         "name": "",
         "type": "uint256",
         "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getPlan",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple[]",
+        "internalType": "struct HeirloomVault.Allocation[]",
+        "components": [
+          {
+            "name": "beneficiary",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "bps",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "unlockAt",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "installments",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "interval",
+            "type": "uint32",
+            "internalType": "uint32"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getPlannedTokens",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address[]",
+        "internalType": "address[]"
       }
     ],
     "stateMutability": "view"
@@ -547,12 +717,12 @@ export const heirloomVaultAbi = [
             "internalType": "address[]"
           },
           {
-            "name": "beneficiaries",
+            "name": "defaultAllocations",
             "type": "tuple[]",
-            "internalType": "struct HeirloomVault.Beneficiary[]",
+            "internalType": "struct HeirloomVault.Allocation[]",
             "components": [
               {
-                "name": "wallet",
+                "name": "beneficiary",
                 "type": "address",
                 "internalType": "address"
               },
@@ -560,8 +730,38 @@ export const heirloomVaultAbi = [
                 "name": "bps",
                 "type": "uint16",
                 "internalType": "uint16"
+              },
+              {
+                "name": "unlockAt",
+                "type": "uint64",
+                "internalType": "uint64"
+              },
+              {
+                "name": "installments",
+                "type": "uint16",
+                "internalType": "uint16"
+              },
+              {
+                "name": "interval",
+                "type": "uint32",
+                "internalType": "uint32"
               }
             ]
+          },
+          {
+            "name": "plannedTokens",
+            "type": "address[]",
+            "internalType": "address[]"
+          },
+          {
+            "name": "nftRuleCount",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "nftFallback",
+            "type": "address",
+            "internalType": "address"
           },
           {
             "name": "ethBalance",
@@ -618,15 +818,10 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "function",
-    "name": "hasClaimed",
+    "name": "hasTokenPlan",
     "inputs": [
       {
         "name": "token",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "heir",
         "type": "address",
         "internalType": "address"
       }
@@ -649,6 +844,183 @@ export const heirloomVaultAbi = [
         "name": "",
         "type": "uint64",
         "internalType": "uint64"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "initialize",
+    "inputs": [
+      {
+        "name": "cfg",
+        "type": "tuple",
+        "internalType": "struct HeirloomVault.Config",
+        "components": [
+          {
+            "name": "owner",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "executor",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "guardians",
+            "type": "address[]",
+            "internalType": "address[]"
+          },
+          {
+            "name": "requiredSignatures",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "inactivityThreshold",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "vetoGracePeriod",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "assetMapCID",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "defaultAllocations",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.Allocation[]",
+            "components": [
+              {
+                "name": "beneficiary",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "bps",
+                "type": "uint16",
+                "internalType": "uint16"
+              },
+              {
+                "name": "unlockAt",
+                "type": "uint64",
+                "internalType": "uint64"
+              },
+              {
+                "name": "installments",
+                "type": "uint16",
+                "internalType": "uint16"
+              },
+              {
+                "name": "interval",
+                "type": "uint32",
+                "internalType": "uint32"
+              }
+            ]
+          },
+          {
+            "name": "tokenPlans",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.TokenPlan[]",
+            "components": [
+              {
+                "name": "token",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "allocations",
+                "type": "tuple[]",
+                "internalType": "struct HeirloomVault.Allocation[]",
+                "components": [
+                  {
+                    "name": "beneficiary",
+                    "type": "address",
+                    "internalType": "address"
+                  },
+                  {
+                    "name": "bps",
+                    "type": "uint16",
+                    "internalType": "uint16"
+                  },
+                  {
+                    "name": "unlockAt",
+                    "type": "uint64",
+                    "internalType": "uint64"
+                  },
+                  {
+                    "name": "installments",
+                    "type": "uint16",
+                    "internalType": "uint16"
+                  },
+                  {
+                    "name": "interval",
+                    "type": "uint32",
+                    "internalType": "uint32"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "nftRules",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.NftRule[]",
+            "components": [
+              {
+                "name": "collection",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "tokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "beneficiary",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "unlockAt",
+                "type": "uint64",
+                "internalType": "uint64"
+              }
+            ]
+          },
+          {
+            "name": "nftFallback",
+            "type": "address",
+            "internalType": "address"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "isBeneficiary",
+    "inputs": [
+      {
+        "name": "who",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
       }
     ],
     "stateMutability": "view"
@@ -719,6 +1091,101 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "function",
+    "name": "nextUnlock",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "heir",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint64",
+        "internalType": "uint64"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "nftClaimed",
+    "inputs": [
+      {
+        "name": "collection",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "tokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "nftFallback",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onERC721Received",
+    "inputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
     "name": "owner",
     "inputs": [],
     "outputs": [
@@ -745,6 +1212,43 @@ export const heirloomVaultAbi = [
         "name": "activityTimestamp",
         "type": "uint64",
         "internalType": "uint64"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "released",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "heir",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "removeTokenPlan",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
       }
     ],
     "outputs": [],
@@ -785,15 +1289,15 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "function",
-    "name": "setBeneficiaries",
+    "name": "setDefaultPlan",
     "inputs": [
       {
-        "name": "beneficiaries_",
+        "name": "allocations",
         "type": "tuple[]",
-        "internalType": "struct HeirloomVault.Beneficiary[]",
+        "internalType": "struct HeirloomVault.Allocation[]",
         "components": [
           {
-            "name": "wallet",
+            "name": "beneficiary",
             "type": "address",
             "internalType": "address"
           },
@@ -801,6 +1305,21 @@ export const heirloomVaultAbi = [
             "name": "bps",
             "type": "uint16",
             "internalType": "uint16"
+          },
+          {
+            "name": "unlockAt",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "installments",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "interval",
+            "type": "uint32",
+            "internalType": "uint32"
           }
         ]
       }
@@ -859,6 +1378,47 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "function",
+    "name": "setNftFallback",
+    "inputs": [
+      {
+        "name": "beneficiary",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setNftRule",
+    "inputs": [
+      {
+        "name": "collection",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "tokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "beneficiary",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "unlockAt",
+        "type": "uint64",
+        "internalType": "uint64"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "setTimings",
     "inputs": [
       {
@@ -874,6 +1434,70 @@ export const heirloomVaultAbi = [
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setTokenPlan",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "allocations",
+        "type": "tuple[]",
+        "internalType": "struct HeirloomVault.Allocation[]",
+        "components": [
+          {
+            "name": "beneficiary",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "bps",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "unlockAt",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "installments",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "interval",
+            "type": "uint32",
+            "internalType": "uint32"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "totalReleased",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -1080,31 +1704,6 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "event",
-    "name": "BeneficiariesUpdated",
-    "inputs": [
-      {
-        "name": "beneficiaries",
-        "type": "tuple[]",
-        "indexed": false,
-        "internalType": "struct HeirloomVault.Beneficiary[]",
-        "components": [
-          {
-            "name": "wallet",
-            "type": "address",
-            "internalType": "address"
-          },
-          {
-            "name": "bps",
-            "type": "uint16",
-            "internalType": "uint16"
-          }
-        ]
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
     "name": "Claimed",
     "inputs": [
       {
@@ -1126,6 +1725,12 @@ export const heirloomVaultAbi = [
         "internalType": "uint256"
       }
     ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "EIP712DomainChanged",
+    "inputs": [],
     "anonymous": false
   },
   {
@@ -1225,6 +1830,147 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "event",
+    "name": "Initialized",
+    "inputs": [
+      {
+        "name": "version",
+        "type": "uint64",
+        "indexed": false,
+        "internalType": "uint64"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NftClaimed",
+    "inputs": [
+      {
+        "name": "heir",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "collection",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "tokenId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NftFallbackUpdated",
+    "inputs": [
+      {
+        "name": "beneficiary",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NftRuleUpdated",
+    "inputs": [
+      {
+        "name": "collection",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "tokenId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "beneficiary",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "unlockAt",
+        "type": "uint64",
+        "indexed": false,
+        "internalType": "uint64"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "PlanRemoved",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "PlanUpdated",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "allocations",
+        "type": "tuple[]",
+        "indexed": false,
+        "internalType": "struct HeirloomVault.Allocation[]",
+        "components": [
+          {
+            "name": "beneficiary",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "bps",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "unlockAt",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "installments",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "interval",
+            "type": "uint32",
+            "internalType": "uint32"
+          }
+        ]
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "RecoveryVetoed",
     "inputs": [
       {
@@ -1314,34 +2060,7 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "error",
-    "name": "AddressEmptyCode",
-    "inputs": [
-      {
-        "name": "target",
-        "type": "address",
-        "internalType": "address"
-      }
-    ]
-  },
-  {
-    "type": "error",
-    "name": "AddressInsufficientBalance",
-    "inputs": [
-      {
-        "name": "account",
-        "type": "address",
-        "internalType": "address"
-      }
-    ]
-  },
-  {
-    "type": "error",
     "name": "AlreadyAttested",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "AlreadyClaimed",
     "inputs": []
   },
   {
@@ -1352,11 +2071,6 @@ export const heirloomVaultAbi = [
   {
     "type": "error",
     "name": "EthTransferFailed",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "FailedInnerCall",
     "inputs": []
   },
   {
@@ -1377,6 +2091,21 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "error",
+    "name": "InvalidInitialization",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidShortString",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidSignature",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "InvalidState",
     "inputs": [
       {
@@ -1388,12 +2117,17 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "error",
-    "name": "NotAttested",
+    "name": "NftAlreadyClaimed",
     "inputs": []
   },
   {
     "type": "error",
-    "name": "NotBeneficiary",
+    "name": "NoNftRule",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotAttested",
     "inputs": []
   },
   {
@@ -1408,6 +2142,11 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "error",
+    "name": "NotInitializing",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "NotOwner",
     "inputs": []
   },
@@ -1415,6 +2154,17 @@ export const heirloomVaultAbi = [
     "type": "error",
     "name": "NotOwnerOrEntryPoint",
     "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotYetUnlocked",
+    "inputs": [
+      {
+        "name": "unlockAt",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
   },
   {
     "type": "error",
@@ -1439,12 +2189,17 @@ export const heirloomVaultAbi = [
   },
   {
     "type": "error",
-    "name": "SafeERC20FailedOperation",
+    "name": "SignatureExpired",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "StringTooLong",
     "inputs": [
       {
-        "name": "token",
-        "type": "address",
-        "internalType": "address"
+        "name": "str",
+        "type": "string",
+        "internalType": "string"
       }
     ]
   },
@@ -1508,23 +2263,6 @@ export const heirloomVaultFactoryAbi = [
             "internalType": "uint256"
           },
           {
-            "name": "beneficiaries",
-            "type": "tuple[]",
-            "internalType": "struct HeirloomVault.Beneficiary[]",
-            "components": [
-              {
-                "name": "wallet",
-                "type": "address",
-                "internalType": "address"
-              },
-              {
-                "name": "bps",
-                "type": "uint16",
-                "internalType": "uint16"
-              }
-            ]
-          },
-          {
             "name": "inactivityThreshold",
             "type": "uint64",
             "internalType": "uint64"
@@ -1538,6 +2276,114 @@ export const heirloomVaultFactoryAbi = [
             "name": "assetMapCID",
             "type": "string",
             "internalType": "string"
+          },
+          {
+            "name": "defaultAllocations",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.Allocation[]",
+            "components": [
+              {
+                "name": "beneficiary",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "bps",
+                "type": "uint16",
+                "internalType": "uint16"
+              },
+              {
+                "name": "unlockAt",
+                "type": "uint64",
+                "internalType": "uint64"
+              },
+              {
+                "name": "installments",
+                "type": "uint16",
+                "internalType": "uint16"
+              },
+              {
+                "name": "interval",
+                "type": "uint32",
+                "internalType": "uint32"
+              }
+            ]
+          },
+          {
+            "name": "tokenPlans",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.TokenPlan[]",
+            "components": [
+              {
+                "name": "token",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "allocations",
+                "type": "tuple[]",
+                "internalType": "struct HeirloomVault.Allocation[]",
+                "components": [
+                  {
+                    "name": "beneficiary",
+                    "type": "address",
+                    "internalType": "address"
+                  },
+                  {
+                    "name": "bps",
+                    "type": "uint16",
+                    "internalType": "uint16"
+                  },
+                  {
+                    "name": "unlockAt",
+                    "type": "uint64",
+                    "internalType": "uint64"
+                  },
+                  {
+                    "name": "installments",
+                    "type": "uint16",
+                    "internalType": "uint16"
+                  },
+                  {
+                    "name": "interval",
+                    "type": "uint32",
+                    "internalType": "uint32"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "nftRules",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.NftRule[]",
+            "components": [
+              {
+                "name": "collection",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "tokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "beneficiary",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "unlockAt",
+                "type": "uint64",
+                "internalType": "uint64"
+              }
+            ]
+          },
+          {
+            "name": "nftFallback",
+            "type": "address",
+            "internalType": "address"
           }
         ]
       },
@@ -1555,6 +2401,25 @@ export const heirloomVaultFactoryAbi = [
       }
     ],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "creatorOf",
+    "inputs": [
+      {
+        "name": "vault",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -1599,23 +2464,6 @@ export const heirloomVaultFactoryAbi = [
             "internalType": "uint256"
           },
           {
-            "name": "beneficiaries",
-            "type": "tuple[]",
-            "internalType": "struct HeirloomVault.Beneficiary[]",
-            "components": [
-              {
-                "name": "wallet",
-                "type": "address",
-                "internalType": "address"
-              },
-              {
-                "name": "bps",
-                "type": "uint16",
-                "internalType": "uint16"
-              }
-            ]
-          },
-          {
             "name": "inactivityThreshold",
             "type": "uint64",
             "internalType": "uint64"
@@ -1629,6 +2477,114 @@ export const heirloomVaultFactoryAbi = [
             "name": "assetMapCID",
             "type": "string",
             "internalType": "string"
+          },
+          {
+            "name": "defaultAllocations",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.Allocation[]",
+            "components": [
+              {
+                "name": "beneficiary",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "bps",
+                "type": "uint16",
+                "internalType": "uint16"
+              },
+              {
+                "name": "unlockAt",
+                "type": "uint64",
+                "internalType": "uint64"
+              },
+              {
+                "name": "installments",
+                "type": "uint16",
+                "internalType": "uint16"
+              },
+              {
+                "name": "interval",
+                "type": "uint32",
+                "internalType": "uint32"
+              }
+            ]
+          },
+          {
+            "name": "tokenPlans",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.TokenPlan[]",
+            "components": [
+              {
+                "name": "token",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "allocations",
+                "type": "tuple[]",
+                "internalType": "struct HeirloomVault.Allocation[]",
+                "components": [
+                  {
+                    "name": "beneficiary",
+                    "type": "address",
+                    "internalType": "address"
+                  },
+                  {
+                    "name": "bps",
+                    "type": "uint16",
+                    "internalType": "uint16"
+                  },
+                  {
+                    "name": "unlockAt",
+                    "type": "uint64",
+                    "internalType": "uint64"
+                  },
+                  {
+                    "name": "installments",
+                    "type": "uint16",
+                    "internalType": "uint16"
+                  },
+                  {
+                    "name": "interval",
+                    "type": "uint32",
+                    "internalType": "uint32"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "nftRules",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.NftRule[]",
+            "components": [
+              {
+                "name": "collection",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "tokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "beneficiary",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "unlockAt",
+                "type": "uint64",
+                "internalType": "uint64"
+              }
+            ]
+          },
+          {
+            "name": "nftFallback",
+            "type": "address",
+            "internalType": "address"
           }
         ]
       },
@@ -1643,6 +2599,25 @@ export const heirloomVaultFactoryAbi = [
         "name": "",
         "type": "address",
         "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getVaultsByCreator",
+    "inputs": [
+      {
+        "name": "creator",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address[]",
+        "internalType": "address[]"
       }
     ],
     "stateMutability": "view"
@@ -1667,6 +2642,19 @@ export const heirloomVaultFactoryAbi = [
     "stateMutability": "view"
   },
   {
+    "type": "function",
+    "name": "implementation",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract HeirloomVault"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
     "type": "event",
     "name": "VaultCreated",
     "inputs": [
@@ -1683,6 +2671,12 @@ export const heirloomVaultFactoryAbi = [
         "internalType": "address"
       },
       {
+        "name": "creator",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
         "name": "salt",
         "type": "uint256",
         "indexed": false,
@@ -1690,6 +2684,11 @@ export const heirloomVaultFactoryAbi = [
       }
     ],
     "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "ERC1167FailedCreateClone",
+    "inputs": []
   }
 ] as const;
 

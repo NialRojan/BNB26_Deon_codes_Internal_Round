@@ -40,23 +40,6 @@
             "internalType": "uint256"
           },
           {
-            "name": "beneficiaries",
-            "type": "tuple[]",
-            "internalType": "struct HeirloomVault.Beneficiary[]",
-            "components": [
-              {
-                "name": "wallet",
-                "type": "address",
-                "internalType": "address"
-              },
-              {
-                "name": "bps",
-                "type": "uint16",
-                "internalType": "uint16"
-              }
-            ]
-          },
-          {
             "name": "inactivityThreshold",
             "type": "uint64",
             "internalType": "uint64"
@@ -70,6 +53,114 @@
             "name": "assetMapCID",
             "type": "string",
             "internalType": "string"
+          },
+          {
+            "name": "defaultAllocations",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.Allocation[]",
+            "components": [
+              {
+                "name": "beneficiary",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "bps",
+                "type": "uint16",
+                "internalType": "uint16"
+              },
+              {
+                "name": "unlockAt",
+                "type": "uint64",
+                "internalType": "uint64"
+              },
+              {
+                "name": "installments",
+                "type": "uint16",
+                "internalType": "uint16"
+              },
+              {
+                "name": "interval",
+                "type": "uint32",
+                "internalType": "uint32"
+              }
+            ]
+          },
+          {
+            "name": "tokenPlans",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.TokenPlan[]",
+            "components": [
+              {
+                "name": "token",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "allocations",
+                "type": "tuple[]",
+                "internalType": "struct HeirloomVault.Allocation[]",
+                "components": [
+                  {
+                    "name": "beneficiary",
+                    "type": "address",
+                    "internalType": "address"
+                  },
+                  {
+                    "name": "bps",
+                    "type": "uint16",
+                    "internalType": "uint16"
+                  },
+                  {
+                    "name": "unlockAt",
+                    "type": "uint64",
+                    "internalType": "uint64"
+                  },
+                  {
+                    "name": "installments",
+                    "type": "uint16",
+                    "internalType": "uint16"
+                  },
+                  {
+                    "name": "interval",
+                    "type": "uint32",
+                    "internalType": "uint32"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "nftRules",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.NftRule[]",
+            "components": [
+              {
+                "name": "collection",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "tokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "beneficiary",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "unlockAt",
+                "type": "uint64",
+                "internalType": "uint64"
+              }
+            ]
+          },
+          {
+            "name": "nftFallback",
+            "type": "address",
+            "internalType": "address"
           }
         ]
       },
@@ -87,6 +178,25 @@
       }
     ],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "creatorOf",
+    "inputs": [
+      {
+        "name": "vault",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -131,23 +241,6 @@
             "internalType": "uint256"
           },
           {
-            "name": "beneficiaries",
-            "type": "tuple[]",
-            "internalType": "struct HeirloomVault.Beneficiary[]",
-            "components": [
-              {
-                "name": "wallet",
-                "type": "address",
-                "internalType": "address"
-              },
-              {
-                "name": "bps",
-                "type": "uint16",
-                "internalType": "uint16"
-              }
-            ]
-          },
-          {
             "name": "inactivityThreshold",
             "type": "uint64",
             "internalType": "uint64"
@@ -161,6 +254,114 @@
             "name": "assetMapCID",
             "type": "string",
             "internalType": "string"
+          },
+          {
+            "name": "defaultAllocations",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.Allocation[]",
+            "components": [
+              {
+                "name": "beneficiary",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "bps",
+                "type": "uint16",
+                "internalType": "uint16"
+              },
+              {
+                "name": "unlockAt",
+                "type": "uint64",
+                "internalType": "uint64"
+              },
+              {
+                "name": "installments",
+                "type": "uint16",
+                "internalType": "uint16"
+              },
+              {
+                "name": "interval",
+                "type": "uint32",
+                "internalType": "uint32"
+              }
+            ]
+          },
+          {
+            "name": "tokenPlans",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.TokenPlan[]",
+            "components": [
+              {
+                "name": "token",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "allocations",
+                "type": "tuple[]",
+                "internalType": "struct HeirloomVault.Allocation[]",
+                "components": [
+                  {
+                    "name": "beneficiary",
+                    "type": "address",
+                    "internalType": "address"
+                  },
+                  {
+                    "name": "bps",
+                    "type": "uint16",
+                    "internalType": "uint16"
+                  },
+                  {
+                    "name": "unlockAt",
+                    "type": "uint64",
+                    "internalType": "uint64"
+                  },
+                  {
+                    "name": "installments",
+                    "type": "uint16",
+                    "internalType": "uint16"
+                  },
+                  {
+                    "name": "interval",
+                    "type": "uint32",
+                    "internalType": "uint32"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "nftRules",
+            "type": "tuple[]",
+            "internalType": "struct HeirloomVault.NftRule[]",
+            "components": [
+              {
+                "name": "collection",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "tokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "beneficiary",
+                "type": "address",
+                "internalType": "address"
+              },
+              {
+                "name": "unlockAt",
+                "type": "uint64",
+                "internalType": "uint64"
+              }
+            ]
+          },
+          {
+            "name": "nftFallback",
+            "type": "address",
+            "internalType": "address"
           }
         ]
       },
@@ -175,6 +376,25 @@
         "name": "",
         "type": "address",
         "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getVaultsByCreator",
+    "inputs": [
+      {
+        "name": "creator",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address[]",
+        "internalType": "address[]"
       }
     ],
     "stateMutability": "view"
@@ -199,6 +419,19 @@
     "stateMutability": "view"
   },
   {
+    "type": "function",
+    "name": "implementation",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract HeirloomVault"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
     "type": "event",
     "name": "VaultCreated",
     "inputs": [
@@ -215,6 +448,12 @@
         "internalType": "address"
       },
       {
+        "name": "creator",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
         "name": "salt",
         "type": "uint256",
         "indexed": false,
@@ -222,5 +461,10 @@
       }
     ],
     "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "ERC1167FailedCreateClone",
+    "inputs": []
   }
 ]

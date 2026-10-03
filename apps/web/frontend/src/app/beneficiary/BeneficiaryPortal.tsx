@@ -19,7 +19,7 @@ export default function BeneficiaryPortal() {
   }
 
   const { live, chain } = v
-  const share = chain.vault?.beneficiaries.find((b) => b.wallet.toLowerCase() === chain.account?.toLowerCase())
+  const share = chain.ethPlan.find((b) => b.wallet.toLowerCase() === chain.account?.toLowerCase())
 
   return (
     <Page title="Heir portal" intro="What you can open depends on your tier and the current release stage. Crypto always opens last.">
@@ -33,18 +33,28 @@ export default function BeneficiaryPortal() {
               <p className="text-sm text-white/60">Connect the wallet the owner named as your beneficiary wallet.</p>
               <Button className="mt-3" onClick={chain.connect}>Connect wallet</Button>
             </Card>
-          ) : !share ? (
+          ) : !share && !chain.role.heir ? (
             <Card><p className="text-sm text-white/60">The connected wallet is not a beneficiary of this vault. Switch accounts in MetaMask.</p></Card>
+          ) : !share ? (
+            <Card><p className="text-sm text-white/60">You are named in this vault for other assets (tokens or NFTs), not its ETH.</p></Card>
           ) : (
             <Card>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm text-white/60">Your share: {share.bps / 100}% of the vault</p>
-                  <p className="text-2xl font-bold">{chain.hasClaimed ? 'Claimed' : `${formatEther(chain.claimable)} ETH`}</p>
+                  <p className="text-sm text-white/60">Your share: {share.bps / 100}% of the vault's ETH</p>
+                  {(share.unlockAt > 0 || share.installments > 1) && (
+                    <p className="text-xs text-white/55">
+                      {share.unlockAt > 0 && `Unlocks ${new Date(share.unlockAt).toLocaleDateString()}. `}
+                      {share.installments > 1 && `Paid in ${share.installments} installments, every ${Math.round(share.interval / 86400)} days.`}
+                    </p>
+                  )}
+                  <p className="text-2xl font-bold">{chain.hasClaimed ? 'Claimed' : `${formatEther(chain.claimable)} ETH available now`}</p>
+                  {chain.released > 0n && <p className="text-xs text-white/55">Already received: {formatEther(chain.released)} ETH</p>}
+                  {chain.nextUnlock > 0 && <p className="text-xs text-white/55">Next payout: {new Date(chain.nextUnlock).toLocaleString()}</p>}
                   <p className="text-xs text-white/55">Sent straight to your wallet. Nobody else can redirect it.</p>
                 </div>
-                <Button disabled={chain.hasClaimed || chain.claimable === 0n || !!chain.busy} onClick={chain.claimEth}>
-                  {chain.busy === 'Claiming' ? 'Claiming…' : chain.hasClaimed ? 'Already claimed' : 'Claim ETH'}
+                <Button disabled={chain.claimable === 0n || !!chain.busy} onClick={chain.claimEth}>
+                  {chain.busy === 'Claiming' ? 'Claiming…' : chain.hasClaimed ? 'Already claimed' : chain.claimable === 0n ? 'Nothing due yet' : 'Claim ETH'}
                 </Button>
               </div>
             </Card>

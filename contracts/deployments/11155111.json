@@ -1,8 +1,11 @@
 {
   "chainId": 11155111,
-  "demoVault": "0x8085f0EF193B9dD3F7501394bD3d054c045aB575",
   "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
-  "factory": "0xb99c8F7257Cf03ACDd019EFe7C86bbfCb1d513B3",
-  "rehearsalVault": "0x0B4E0D3a3c756533acbfe1e64196eA7B731D2bB9",
-  "auditAnchor": "0x13842d3635883c55045c8EF37e0DcBdb2485ae36"
+  "auditAnchor": "0x13842d3635883c55045c8EF37e0DcBdb2485ae36",
+  "v1": {
+    "factory": "0xb99c8F7257Cf03ACDd019EFe7C86bbfCb1d513B3",
+    "demoVault": "0x8085f0EF193B9dD3F7501394bD3d054c045aB575",
+    "rehearsalVault": "0x0B4E0D3a3c756533acbfe1e64196eA7B731D2bB9",
+    "note": "v1 contracts (single default split). Superseded by the v2 factory; kept for the record."
+  }
 }

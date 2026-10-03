@@ -64,8 +64,10 @@ export function SealSecretCard() {
   const { chain, keys, secrets, busy, msg, act } = useEscrow()
   const [label, setLabel] = useState('')
   const [secret, setSecret] = useState('')
+  const [only, setOnly] = useState<string[]>([]) // empty = every heir
   const threshold = chain.vault?.requiredSignatures ?? 2
   const guardianKeys = registered(keys, 'GUARDIAN')
+  const heirKeys = registered(keys, 'HEIR')
 
   return (
     <Card>
@@ -86,9 +88,10 @@ export function SealSecretCard() {
           onSubmit={(e) => {
             e.preventDefault()
             act('Sealing', async () => {
-              await sealSecret(label.trim(), secret, threshold)
+              await sealSecret(label.trim(), secret, threshold, only.length ? only : null)
               setLabel('')
               setSecret('')
+              setOnly([])
               return `Sealed "${label.trim()}". Only ${threshold} guardians acting after release can open it.`
             })
           }}
@@ -96,6 +99,22 @@ export function SealSecretCard() {
           <input className={field} required value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Label, e.g. Gmail" autoComplete="off" />
           <input className={field} required type="password" value={secret} onChange={(e) => setSecret(e.target.value)} placeholder="Password or recovery phrase" autoComplete="new-password" />
           <Button disabled={!!busy || guardianKeys.length < threshold}>{busy ? 'Sealing…' : 'Seal'}</Button>
+          <fieldset className="md:col-span-3">
+            <legend className="text-xs text-white/55">Who can open it? {only.length ? '' : '(every heir)'}</legend>
+            <div className="mt-1 flex flex-wrap gap-3">
+              {heirKeys.length === 0 && <span className="text-xs text-white/45">Heirs appear here once they register their key.</span>}
+              {heirKeys.map((h) => (
+                <label key={h.address} className="flex items-center gap-1.5 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={only.includes(h.address)}
+                    onChange={() => setOnly((o) => (o.includes(h.address) ? o.filter((x) => x !== h.address) : [...o, h.address]))}
+                  />
+                  {short(h.address)}
+                </label>
+              ))}
+            </div>
+          </fieldset>
         </form>
       )}
       <Notice msg={msg} />
@@ -104,7 +123,9 @@ export function SealSecretCard() {
           {secrets.map((s) => (
             <li key={s.id} className="flex justify-between py-2">
               <span>{s.label}</span>
-              <span className="text-white/55">{s.threshold} of {s.held.length} guardians · {s.releasedBy.length} released</span>
+              <span className="text-white/55">
+                {s.threshold} of {s.held.length} guardians · {s.releasedBy.length} released · for {s.recipients ? s.recipients.map(short).join(', ') : 'every heir'}
+              </span>
             </li>
           ))}
         </ul>

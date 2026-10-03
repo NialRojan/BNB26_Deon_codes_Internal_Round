@@ -2,41 +2,58 @@
 pragma solidity ^0.8.28;
 
 import {IEntryPoint} from "account-abstraction/interfaces/IEntryPoint.sol";
-import {Create2} from "@openzeppelin/contracts/utils/Create2.sol";
+import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {HeirloomVault} from "./HeirloomVault.sol";
 
-/// @title HeirloomVaultFactory
-/// @notice Deterministic (CREATE2) deployer for HeirloomVaults. Usable directly or as an ERC-4337
-///         `initCode` factory, so a vault address is known before it is deployed.
+/// @title HeirloomVaultFactory (v2)
+/// @notice Creates HeirloomVaults as EIP-1167 clones of one implementation (~10x cheaper than full
+///         deployments). The CREATE2 salt commits to the full vault config, so the address a law firm
+///         writes into a will can only ever hold a vault with exactly that config. Usable directly or as an
+///         ERC-4337 `initCode` factory.
 contract HeirloomVaultFactory {
+    HeirloomVault public immutable implementation;
     IEntryPoint public immutable entryPoint;
 
     mapping(address owner => address[]) internal _vaultsOf;
+    mapping(address creator => address[]) internal _vaultsCreatedBy;
+    mapping(address vault => address) public creatorOf;
 
-    event VaultCreated(address indexed vault, address indexed owner, uint256 salt);
+    event VaultCreated(address indexed vault, address indexed owner, address indexed creator, uint256 salt);
 
     constructor(IEntryPoint anEntryPoint) {
         entryPoint = anEntryPoint;
+        implementation = new HeirloomVault(anEntryPoint);
     }
 
     /// @notice Deploy a vault, or return the existing one if this (cfg, salt) was already deployed.
+    ///         `msg.sender` is recorded as the creator (e.g. the law firm).
     function createVault(HeirloomVault.Config calldata cfg, uint256 salt) external returns (HeirloomVault vault) {
-        address predicted = getAddress(cfg, salt);
+        bytes32 s = _salt(cfg, salt);
+        address predicted = Clones.predictDeterministicAddress(address(implementation), s);
         if (predicted.code.length > 0) return HeirloomVault(payable(predicted));
 
-        vault = new HeirloomVault{salt: bytes32(salt)}(entryPoint, cfg);
+        vault = HeirloomVault(payable(Clones.cloneDeterministic(address(implementation), s)));
+        vault.initialize(cfg);
         _vaultsOf[cfg.owner].push(address(vault));
-        emit VaultCreated(address(vault), cfg.owner, salt);
+        _vaultsCreatedBy[msg.sender].push(address(vault));
+        creatorOf[address(vault)] = msg.sender;
+        emit VaultCreated(address(vault), cfg.owner, msg.sender, salt);
     }
 
     /// @notice Counterfactual address of the vault for (cfg, salt).
-    function getAddress(HeirloomVault.Config calldata cfg, uint256 salt) public view returns (address) {
-        bytes32 initCodeHash =
-            keccak256(abi.encodePacked(type(HeirloomVault).creationCode, abi.encode(entryPoint, cfg)));
-        return Create2.computeAddress(bytes32(salt), initCodeHash);
+    function getAddress(HeirloomVault.Config calldata cfg, uint256 salt) external view returns (address) {
+        return Clones.predictDeterministicAddress(address(implementation), _salt(cfg, salt));
     }
 
     function getVaultsByOwner(address owner) external view returns (address[] memory) {
         return _vaultsOf[owner];
+    }
+
+    function getVaultsByCreator(address creator) external view returns (address[] memory) {
+        return _vaultsCreatedBy[creator];
+    }
+
+    function _salt(HeirloomVault.Config calldata cfg, uint256 salt) internal pure returns (bytes32) {
+        return keccak256(abi.encode(cfg, salt));
     }
 }

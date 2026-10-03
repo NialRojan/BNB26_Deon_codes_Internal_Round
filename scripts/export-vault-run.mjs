@@ -61,6 +61,14 @@ const describe = (l) => {
     case "VaultInitialized": return `Vault created for ${who(a.owner)}`;
     case "GuardiansUpdated": return `Guardians set: ${a.guardians.map(who).join(", ")} (${a.requiredSignatures} required)`;
     case "BeneficiariesUpdated": return `Heirs set: ${a.beneficiaries.map((b) => who(b.wallet)).join(", ")}`;
+    case "PlanUpdated": {
+      const target = a.token?.toLowerCase() === "0xffffffffffffffffffffffffffffffffffffffff" ? "Default split" : a.token === "0x0000000000000000000000000000000000000000" ? "ETH split" : `Split for token ${who(a.token)}`;
+      const parts = a.allocations.map((x) => `${who(x.beneficiary)} ${Number(x.bps) / 100}%${Number(x.unlockAt) ? ` from ${new Date(Number(x.unlockAt) * 1000).toISOString().slice(0, 10)}` : ""}${Number(x.installments) > 1 ? ` in ${x.installments} installments` : ""}`);
+      return `${target}: ${parts.join(", ")}`;
+    }
+    case "NftRuleUpdated": return `NFT ${who(a.collection)} #${a.tokenId} left to ${who(a.beneficiary)}`;
+    case "NftFallbackUpdated": return `Other NFTs go to ${who(a.beneficiary)}`;
+    case "NftClaimed": return `${who(a.heir)} received NFT ${who(a.collection)} #${a.tokenId}`;
     case "TimingsUpdated": return `Timers: ${a.inactivityThreshold}s inactivity, ${a.vetoGracePeriod}s veto window`;
     case "HeartbeatPinged": return `Owner proof of life (round ${a.epoch})`;
     case "GuardianAttested": return `${who(a.guardian)} confirmed passing (${a.count} so far, round ${a.epoch})`;

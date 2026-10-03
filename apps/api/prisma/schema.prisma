@@ -221,6 +221,8 @@ model SealedSecret {
   label        String
   asset        String         // EncryptedAsset JSON (ciphertext only)
   threshold    Int
+  /// JSON array of heir addresses (lowercase) allowed to open this secret; null = every heir.
+  recipients   String?
   createdAt    DateTime       @default(now())
 
   shares       EscrowShare[]

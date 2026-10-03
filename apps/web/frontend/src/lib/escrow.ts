@@ -45,7 +45,7 @@ async function privateKey(address: string, role: EscrowRole) {
 
 // ---------------------------------------------------------------- API types
 export interface PublicKeyRow { address: string; role: EscrowRole; publicKey: string }
-export interface SecretRow { id: string; label: string; threshold: number; createdAt: string; held: { guardian: string; encryptedShare: string }[]; releasedBy: string[] }
+export interface SecretRow { id: string; label: string; threshold: number; createdAt: string; held: { guardian: string; encryptedShare: string }[]; recipients: string[] | null; releasedBy: string[] }
 interface ReleasedRow { id: string; label: string; threshold: number; asset: EncryptedAsset; shares: { guardian: string; encryptedShare: string }[] }
 
 export const listKeys = () => api<PublicKeyRow[]>(`/escrow/keys?vault=${vault}`)
@@ -62,14 +62,16 @@ export async function registerKey(role: EscrowRole) {
   return account
 }
 
-/** Owner: encrypt a secret and give each registered guardian one encrypted Shamir share. */
-export async function sealSecret(label: string, secret: string, threshold: number) {
+/** Owner: encrypt a secret and give each registered guardian one encrypted Shamir share.
+ *  `recipients` limits which heirs can ever open it (null = every heir). */
+export async function sealSecret(label: string, secret: string, threshold: number, recipients: string[] | null = null) {
   const guardians = (await listKeys()).filter((k) => k.role === 'GUARDIAN')
   if (guardians.length < threshold)
     throw new Error(`${guardians.length} of the needed ${threshold} guardians have registered a key. Ask them to open the Guardian portal first.`)
   const { asset, shares } = await escrow.sealSecret(secret, guardians, threshold)
-  const { signature } = await signMessage(escrowMessages.sealSecret(vault, label, asset, shares))
-  return api<{ id: string }>('/escrow/secrets', { method: 'POST', body: { vaultAddress: vault, label, asset, threshold, shares, signature } })
+  const to = recipients?.length ? recipients.map((r) => r.toLowerCase()) : null
+  const { signature } = await signMessage(escrowMessages.sealSecret(vault, label, asset, shares, to))
+  return api<{ id: string }>('/escrow/secrets', { method: 'POST', body: { vaultAddress: vault, label, asset, threshold, shares, signature, ...(to ? { recipients: to } : {}) } })
 }
 
 /** Guardian (after execution): decrypt own shares and re-encrypt them to every registered heir. */
@@ -82,7 +84,9 @@ export async function releaseMyShares(guardian: string) {
   for (const s of await listSecrets()) {
     const held = s.held.find((h) => h.guardian === me)
     if (!held) continue
-    const releases = await escrow.releaseShare(held.encryptedShare, key, heirs)
+    const forThis = s.recipients ? heirs.filter((h) => s.recipients!.includes(h.address)) : heirs
+    if (!forThis.length) continue
+    const releases = await escrow.releaseShare(held.encryptedShare, key, forThis)
     const { signature } = await signMessage(escrowMessages.releaseShare(s.id, me, releases))
     await api(`/escrow/secrets/${s.id}/release`, { method: 'POST', body: { guardian: me, releases, signature } })
     released++
