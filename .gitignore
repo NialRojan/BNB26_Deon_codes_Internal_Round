@@ -1,0 +1,13 @@
+.kilo
+.freebuff
+node_modules/
+dist/
+build/
+coverage/
+.next/
+.turbo/
+.cache/
+*.tsbuildinfo
+.env
+.env.local
+.env.*.local
