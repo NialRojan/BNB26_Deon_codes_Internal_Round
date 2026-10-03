@@ -1,0 +1,66 @@
+{
+  "_comment": "Lit Protocol evmContractConditions for Member 1. Replace contractAddress with the user's vault address. Decryption succeeds only after the vault reaches Executed.",
+  "evmContractConditions": [
+    {
+      "contractAddress": "<VAULT_ADDRESS>",
+      "chain": "sepolia",
+      "functionName": "isExecuted",
+      "functionParams": [],
+      "functionAbi": {
+        "type": "function",
+        "name": "isExecuted",
+        "stateMutability": "view",
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool",
+            "internalType": "bool"
+          }
+        ]
+      },
+      "returnValueTest": {
+        "key": "",
+        "comparator": "=",
+        "value": "true"
+      }
+    }
+  ],
+  "executorOnlyAssetMap": {
+    "_comment": "Stage 1: legal asset map, decryptable only by the executor after execution.",
+    "evmContractConditions": [
+      {
+        "contractAddress": "<VAULT_ADDRESS>",
+        "chain": "sepolia",
+        "functionName": "canAccessAssetMap",
+        "functionParams": [
+          ":userAddress"
+        ],
+        "functionAbi": {
+          "type": "function",
+          "name": "canAccessAssetMap",
+          "stateMutability": "view",
+          "inputs": [
+            {
+              "name": "who",
+              "type": "address",
+              "internalType": "address"
+            }
+          ],
+          "outputs": [
+            {
+              "name": "",
+              "type": "bool",
+              "internalType": "bool"
+            }
+          ]
+        },
+        "returnValueTest": {
+          "key": "",
+          "comparator": "=",
+          "value": "true"
+        }
+      }
+    ]
+  }
+}
