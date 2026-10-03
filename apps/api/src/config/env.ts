@@ -22,6 +22,11 @@ const envSchema = z.object({
   CHAIN_POLL_INTERVAL_MS: z.coerce.number().default(12000),
   OWNER_ALERT_RECIPIENT: z.string().default("owner@heirloom.local"),
   OWNER_ALERT_CHANNEL: z.string().default("EMAIL"),
+  // Audit-log anchoring (HeirloomAuditAnchor). Disabled unless both are set.
+  ANCHOR_CONTRACT_ADDRESS: z.string().optional(),
+  ANCHOR_PRIVATE_KEY: z.string().optional(),
+  ANCHOR_RPC_URL: z.string().optional(),
+  ANCHOR_INTERVAL_MS: z.coerce.number().default(300000),
 });
 
 export const config = envSchema.parse(process.env);

@@ -4,6 +4,12 @@ import { z } from "zod";
 import { escrowMessages } from "@heirloom/shared";
 import { prisma } from "../database/prisma.js";
 import { ContractClient } from "../chain/contractClient.js";
+import { AuditRepository } from "../repositories/auditRepository.js";
+
+const audit = new AuditRepository();
+/** Append a wallet-signed escrow action to the (anchored) audit log. Metadata avoids key names the sanitizer strips. */
+const logEscrow = (eventType: string, actorId: string, actorType: string, entityId: string, entityType: string, metadata: Record<string, unknown>) =>
+  audit.create({ eventType, actorId, actorType, entityId, entityType, metadata });
 
 /**
  * Key escrow for sealed secrets (option B).
@@ -65,6 +71,7 @@ export function createEscrowRouter(chain: EscrowChain = new ContractClient()) {
       create: b,
       update: { publicKey: b.publicKey, signature: b.signature },
     });
+    await logEscrow("ESCROW_KEY_REGISTERED", b.address, b.role, b.vaultAddress, "EscrowKey", { contract: b.vaultAddress, role: b.role, signature: b.signature });
     res.status(201).json({ success: true, data: { address: key.address, role: key.role } });
   }));
 
@@ -92,6 +99,9 @@ export function createEscrowRouter(chain: EscrowChain = new ContractClient()) {
         threshold: b.threshold,
         shares: { create: b.shares.map((s) => ({ guardian: s.guardian, recipient: s.guardian, kind: "HELD", encryptedShare: s.encryptedShare })) },
       },
+    });
+    await logEscrow("ESCROW_ITEM_SEALED", owner.toLowerCase(), "OWNER", b.vaultAddress, "EscrowItem", {
+      contract: b.vaultAddress, item: secret.id, label: b.label, threshold: b.threshold, holders: b.shares.map((s) => s.guardian), signature: b.signature,
     });
     res.status(201).json({ success: true, data: { id: secret.id } });
   }));
@@ -134,6 +144,9 @@ export function createEscrowRouter(chain: EscrowChain = new ContractClient()) {
         update: { encryptedShare: r.encryptedShare },
       });
     }
+    await logEscrow("ESCROW_SHARE_RELEASED", b.guardian, "GUARDIAN", secret.vaultAddress, "EscrowItem", {
+      contract: secret.vaultAddress, item: secret.id, recipients: b.releases.map((r) => r.heir), signature: b.signature,
+    });
     res.status(201).json({ success: true, data: { released: b.releases.length } });
   }));
 

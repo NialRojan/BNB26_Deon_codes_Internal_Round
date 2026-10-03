@@ -2,6 +2,7 @@ import { Router } from "express";
 import vaultRoutes from "./vault.js";
 import chainRoutes from "./chain.js";
 import escrowRoutes from "./escrow.js";
+import auditRoutes from "./audit.js";
 import guardiansRoutes from "./guardians.js";
 import attestationsRoutes from "./attestations.js";
 import claimsRoutes from "./claims.js";
@@ -25,6 +26,7 @@ router.get("/health", (_req, res) => {
 router.use("/vault", vaultRoutes);
 router.use("/chain", chainRoutes);
 router.use("/escrow", escrowRoutes);
+router.use("/audit", auditRoutes);
 router.use("/guardians", guardiansRoutes);
 router.use("/attestations", attestationsRoutes);
 router.use("/claims", claimsRoutes);

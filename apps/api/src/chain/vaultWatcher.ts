@@ -116,7 +116,7 @@ export class VaultEventWatcher {
 
     const owner = await this.ownerForVault();
     const metadata = {
-      vault: this.vaultAddress,
+      contract: this.vaultAddress,
       event: ev.eventName,
       txHash: ev.transactionHash,
       blockNumber: ev.blockNumber?.toString(),

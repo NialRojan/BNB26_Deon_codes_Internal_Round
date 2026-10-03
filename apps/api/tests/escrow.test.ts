@@ -73,6 +73,14 @@ describe("Key escrow gated by HeirloomVault.isExecuted()", () => {
     got = (await request(app).get(`/escrow/released?vault=${VAULT}&heir=${heir.address}`)).body.data[0];
     const plaintext = await escrow.recoverSecret(got.asset, got.shares.map((s: { encryptedShare: string }) => s.encryptedShare), h.pair.privateKey, 2);
     expect(plaintext).toBe("gmail: hunter2");
+
+    // Every wallet-signed escrow action is in the (anchorable) audit log, without any secret material.
+    const { prisma } = await import("../src/database/prisma.js");
+    const logged = await prisma.auditEvent.findMany({ where: { eventType: { startsWith: "ESCROW_" } } });
+    expect(logged.filter((e) => e.eventType === "ESCROW_KEY_REGISTERED")).toHaveLength(4);
+    expect(logged.filter((e) => e.eventType === "ESCROW_ITEM_SEALED")).toHaveLength(1);
+    expect(logged.filter((e) => e.eventType === "ESCROW_SHARE_RELEASED")).toHaveLength(2);
+    expect(JSON.stringify(logged)).not.toContain("hunter2");
   });
 
   it("rejects keys from wallets that are not guardians/heirs, and forged signatures", async () => {
