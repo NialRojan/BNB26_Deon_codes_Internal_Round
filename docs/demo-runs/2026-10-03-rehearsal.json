@@ -1,0 +1,156 @@
+{
+  "vault": "0x0B4E0D3a3c756533acbfe1e64196eA7B731D2bB9",
+  "network": "sepolia",
+  "exportedAt": "2026-10-03T20:48:41.460Z",
+  "finalState": "Executed",
+  "balanceWei": "0",
+  "events": [
+    {
+      "time": "2026-10-03T19:52:36.000Z",
+      "block": 11837746,
+      "event": "TimingsUpdated",
+      "description": "Timers: 120s inactivity, 180s veto window",
+      "sentBy": "Imported Account 8 (Owner)",
+      "tx": "0x5e76db4f79b84dc31da3f6ab89837374847dc1cdb16220c7a45113107421d5fe",
+      "args": {
+        "inactivityThreshold": "120",
+        "vetoGracePeriod": "180"
+      }
+    },
+    {
+      "time": "2026-10-03T19:52:36.000Z",
+      "block": 11837746,
+      "event": "GuardiansUpdated",
+      "description": "Guardians set: Imported Account 7 (Guardian 1), Imported Account 6 (Guardian 2), Imported Account 5 (Guardian 3) (2 required)",
+      "sentBy": "Imported Account 8 (Owner)",
+      "tx": "0x5e76db4f79b84dc31da3f6ab89837374847dc1cdb16220c7a45113107421d5fe",
+      "args": {
+        "guardians": [
+          "0x0915C233A1Ad6092a0529e0b63E3E4ec41371cdD",
+          "0xa5Bf598dC07395c21f5Bf39Cf969E8977Ee58Ea6",
+          "0x8bcFDA887Cbbc1f202766eF40a18A4d93F77a434"
+        ],
+        "requiredSignatures": "2"
+      }
+    },
+    {
+      "time": "2026-10-03T19:52:36.000Z",
+      "block": 11837746,
+      "event": "BeneficiariesUpdated",
+      "description": "Heirs set: Imported Account 4 (Heir A, 60%), Imported Account 3 (Heir B, 40%)",
+      "sentBy": "Imported Account 8 (Owner)",
+      "tx": "0x5e76db4f79b84dc31da3f6ab89837374847dc1cdb16220c7a45113107421d5fe",
+      "args": {
+        "beneficiaries": [
+          {
+            "wallet": "0x66163667D14B859929697c89e591FF5d624bc71D",
+            "bps": 6000
+          },
+          {
+            "wallet": "0x806D387Fa3fcF6093E4b0FeAdd9fFaF425DeEddA",
+            "bps": 4000
+          }
+        ]
+      }
+    },
+    {
+      "time": "2026-10-03T19:52:36.000Z",
+      "block": 11837746,
+      "event": "VaultInitialized",
+      "description": "Vault created for Imported Account 8 (Owner)",
+      "sentBy": "Imported Account 8 (Owner)",
+      "tx": "0x5e76db4f79b84dc31da3f6ab89837374847dc1cdb16220c7a45113107421d5fe",
+      "args": {
+        "owner": "0x668A3BB33A89E2fF21652E190fB425a59D46AF84",
+        "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+      }
+    },
+    {
+      "time": "2026-10-03T20:12:36.000Z",
+      "block": 11837836,
+      "event": "HeartbeatPinged",
+      "description": "Owner proof of life (round 1)",
+      "sentBy": "Imported Account 8 (Owner)",
+      "tx": "0x400f6568893257c3e29374177562797821642574efbc58a5501e6351847a8bf9",
+      "args": {
+        "epoch": "1",
+        "timestamp": "1791058356"
+      }
+    },
+    {
+      "time": "2026-10-03T20:32:12.000Z",
+      "block": 11837918,
+      "event": "GuardianAttested",
+      "description": "Imported Account 7 (Guardian 1) confirmed passing (1 so far, round 1)",
+      "sentBy": "Imported Account 7 (Guardian 1)",
+      "tx": "0x5d62d37d81218eaf65c3a4854a63cf237da8f783622fe8aa4c4b4ac8dadab5f7",
+      "args": {
+        "guardian": "0x0915C233A1Ad6092a0529e0b63E3E4ec41371cdD",
+        "epoch": "1",
+        "count": "1"
+      }
+    },
+    {
+      "time": "2026-10-03T20:33:00.000Z",
+      "block": 11837921,
+      "event": "GuardianAttested",
+      "description": "Imported Account 6 (Guardian 2) confirmed passing (2 so far, round 1)",
+      "sentBy": "Imported Account 6 (Guardian 2)",
+      "tx": "0xc2cb7361f547b3c041a3f070a617be5bce742c8a25787ffb97616db86f8bd1e4",
+      "args": {
+        "guardian": "0xa5Bf598dC07395c21f5Bf39Cf969E8977Ee58Ea6",
+        "epoch": "1",
+        "count": "2"
+      }
+    },
+    {
+      "time": "2026-10-03T20:33:00.000Z",
+      "block": 11837921,
+      "event": "TriggerPending",
+      "description": "Threshold reached: veto window open until 2026-10-03T20:36:00.000Z",
+      "sentBy": "Imported Account 6 (Guardian 2)",
+      "tx": "0xc2cb7361f547b3c041a3f070a617be5bce742c8a25787ffb97616db86f8bd1e4",
+      "args": {
+        "epoch": "1",
+        "vetoEndTime": "1791059760"
+      }
+    },
+    {
+      "time": "2026-10-03T20:36:48.000Z",
+      "block": 11837936,
+      "event": "ReleaseExecuted",
+      "description": "Release executed. Owner key locked, heirs unlocked",
+      "sentBy": "Imported Account 7 (Guardian 1)",
+      "tx": "0xa6f2418908b2b67eaff6ee5f041202ed192ff77140a1c4a74e5d31daa2f489a7",
+      "args": {
+        "timestamp": "1791059808"
+      }
+    },
+    {
+      "time": "2026-10-03T20:47:12.000Z",
+      "block": 11837979,
+      "event": "Claimed",
+      "description": "Imported Account 4 (Heir A, 60%) claimed 0.012 ETH",
+      "sentBy": "Imported Account 4 (Heir A, 60%)",
+      "tx": "0xd1825cc10d105cc16340fd163f9c3f82d9ccebf5d9c3665c930e512352f8fee0",
+      "args": {
+        "heir": "0x66163667D14B859929697c89e591FF5d624bc71D",
+        "token": "0x0000000000000000000000000000000000000000",
+        "amount": "12000000000000000"
+      }
+    },
+    {
+      "time": "2026-10-03T20:48:00.000Z",
+      "block": 11837982,
+      "event": "Claimed",
+      "description": "Imported Account 3 (Heir B, 40%) claimed 0.008 ETH",
+      "sentBy": "Imported Account 3 (Heir B, 40%)",
+      "tx": "0x20d1a1acff872fa6f7b69da1e7a0125a655885eec6e7aa67751ddb449e91f7fe",
+      "args": {
+        "heir": "0x806D387Fa3fcF6093E4b0FeAdd9fFaF425DeEddA",
+        "token": "0x0000000000000000000000000000000000000000",
+        "amount": "8000000000000000"
+      }
+    }
+  ]
+}
