@@ -8,8 +8,18 @@
   ],
   "scripts": {
     "dev:api": "npm run dev --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web",
     "build:api": "npm run build --workspace=apps/api",
+    "build:web": "npm run build --workspace=apps/web",
     "test:api": "npm run test --workspace=apps/api",
-    "test": "npm run test --workspace=apps/api"
+    "test:crypto": "npm run test --workspace=packages/crypto",
+    "test:contracts": "cd contracts && forge test",
+    "test": "npm run test:crypto && npm run test:api"
+  },
+  "allowScripts": {
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "esbuild@0.28.2": true,
+    "prisma@6.19.3": true
   }
 }
