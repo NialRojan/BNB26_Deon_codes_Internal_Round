@@ -3,8 +3,24 @@ import {
   type ReactNode,
   useCallback,
   useContext,
+  useEffect,
+  useRef,
   useState,
 } from "react";
+import type { Address } from "viem";
+import {
+  connectWallet,
+  currentAccount,
+  ETH,
+  explainError,
+  onAccountsChanged,
+  readClaimable,
+  readHasAttested,
+  readHasClaimed,
+  readVault,
+  writeVault,
+  type OnChainVault,
+} from "./chain";
 // TODO: replace these local types with imports from packages/shared once the schema is agreed.
 export type VaultState =
   | "Active"
@@ -81,7 +97,32 @@ export interface Vault {
   removeAsset: (id: string) => void;
   toggleCheck: (k: CheckKey) => void;
   log: (text: string, tone?: AuditEvent["tone"]) => void;
+  /** true = state comes from the HeirloomVault contract on Sepolia; false = local demo state */
+  live: boolean;
+  setLive: (live: boolean) => void;
+  chain: Chain;
 }
+
+export interface Chain {
+  vault: OnChainVault | null;
+  account: Address | null;
+  role: { owner: boolean; guardian: boolean; heir: boolean; executor: boolean };
+  hasAttested: boolean;
+  claimable: bigint;
+  hasClaimed: boolean;
+  busy: string | null;
+  error: string | null;
+  lastTx: string | null;
+  connect: () => Promise<void>;
+  attest: () => Promise<void>;
+  claimEth: () => Promise<void>;
+  refresh: () => Promise<void>;
+  clearError: () => void;
+}
+
+const ON_CHAIN_STATE: VaultState[] = ["Active", "Watch", "VetoWindow", "Executed"];
+const POLL_MS = 4000;
+const eq = (a?: string | null, b?: string | null) => !!a && !!b && a.toLowerCase() === b.toLowerCase();
 
 const DAY = 864e5;
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -179,13 +220,111 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  // ---------------------------------------------------------------- on-chain (Sepolia)
+  const [live, setLive] = useState(true);
+  const [cv, setCv] = useState<OnChainVault | null>(null);
+  const [account, setAccount] = useState<Address | null>(null);
+  const [hasAttested, setHasAttested] = useState(false);
+  const [claimable, setClaimable] = useState<bigint>(0n);
+  const [hasClaimed, setHasClaimed] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [lastTx, setLastTx] = useState<string | null>(null);
+  const prevState = useRef<number | null>(null);
+
+  const refresh = useCallback(async () => {
+    try {
+      const v = await readVault();
+      setCv(v);
+      if (prevState.current !== null && prevState.current !== v.state) {
+        const tone = v.state === 0 ? "ok" : v.state === 3 ? "risk" : "warn";
+        log(`On-chain: vault is now ${["Active", "Watch", "TriggerPending", "Executed"][v.state]}.`, tone);
+      }
+      prevState.current = v.state;
+      if (account) {
+        const [att, cl, done] = await Promise.all([
+          readHasAttested(account),
+          readClaimable(account, ETH),
+          readHasClaimed(account, ETH),
+        ]);
+        setHasAttested(att);
+        setClaimable(cl);
+        setHasClaimed(done);
+      }
+    } catch (e) {
+      setError(explainError(e));
+    }
+  }, [account, log]);
+
+  useEffect(() => {
+    currentAccount().then(setAccount).catch(() => {});
+    return onAccountsChanged(setAccount);
+  }, []);
+
+  useEffect(() => {
+    if (!live) return;
+    refresh();
+    const t = setInterval(refresh, POLL_MS);
+    return () => clearInterval(t);
+  }, [live, refresh]);
+
+  const run = async (label: string, call: Parameters<typeof writeVault>[0], done: string) => {
+    setBusy(label);
+    setError(null);
+    try {
+      const hash = await writeVault(call);
+      setLastTx(hash);
+      log(done, "ok");
+      await refresh();
+    } catch (e) {
+      setError(explainError(e));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const role = {
+    owner: eq(account, cv?.owner),
+    guardian: !!cv?.guardians.some((g) => eq(g, account)),
+    heir: !!cv?.beneficiaries.some((b) => eq(b.wallet, account)),
+    executor: eq(account, cv?.executor),
+  };
+
+  const chain: Chain = {
+    vault: cv,
+    account,
+    role,
+    hasAttested,
+    claimable,
+    hasClaimed,
+    busy,
+    error,
+    lastTx,
+    connect: async () => {
+      try {
+        setAccount(await connectWallet());
+      } catch (e) {
+        setError(explainError(e));
+      }
+    },
+    attest: () => run("Confirming", { functionName: "attestGuardian" }, "Guardian attestation recorded on-chain."),
+    claimEth: () =>
+      account
+        ? run("Claiming", { functionName: "claim", args: [ETH, account] }, "Inheritance claimed. ETH sent to your wallet.")
+        : chain.connect(),
+    refresh,
+    clearError: () => setError(null),
+  };
+
   const checkIn = () => {
+    if (live) return void run("Checking in", { functionName: "pingHeartbeat" }, "You checked in on-chain. Proof of life recorded.");
     setLastCheckIn(Date.now());
     if (state === "Watch") setVaultState("Active");
     log("You checked in. Proof of life recorded.", "ok");
   };
 
   const cancelRecovery = () => {
+    if (live) return void run("Cancelling", { functionName: "vetoRecovery" }, "You vetoed the recovery on-chain. Your vault is Active again.");
     setVaultState("Active");
     setStage(0);
     setRisk(8);
@@ -194,6 +333,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   };
 
   const advance = () => {
+    if (live) return void run("Releasing", { functionName: "executeRelease" }, "Veto window over. Release executed on-chain.");
     if (state === "TriggerPending" || state === "VetoWindow") {
       setVaultState("StagedRelease");
       setStage(1);
@@ -258,15 +398,17 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     log("Demo reset. Vault is Active.", "ok");
   };
 
+  // When live, the contract is the source of truth for lifecycle fields.
+  const onChain = live && cv;
   const value: Vault = {
-    state,
-    stage,
+    state: onChain ? ON_CHAIN_STATE[cv.state] : state,
+    stage: onChain ? (cv.state === 3 ? 3 : 0) : stage,
     risk,
-    vetoEndsAt,
-    lastCheckIn,
-    k,
-    vetoDays,
-    policy,
+    vetoEndsAt: onChain ? cv.vetoEndTime : vetoEndsAt,
+    lastCheckIn: onChain ? cv.lastHeartbeat : lastCheckIn,
+    k: onChain ? cv.requiredSignatures : k,
+    vetoDays: onChain ? cv.vetoGracePeriod / 86400 : vetoDays,
+    policy: onChain ? { ...policy, checkInDays: cv.inactivityThreshold / 86400 } : policy,
     guardians,
     heirs,
     assets,
@@ -289,6 +431,9 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     addAsset: (a) => setAssets((x) => [...x, { ...a, id: uid() }]),
     removeAsset: (id) => setAssets((x) => x.filter((a) => a.id !== id)),
     toggleCheck: (key) => setChecklist((c) => ({ ...c, [key]: !c[key] })),
+    live,
+    setLive,
+    chain,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { useVault, type VaultState } from "../lib/vault";
+import { addrUrl, short } from "../lib/chain";
+import { formatEther } from "viem";
 
 const states: VaultState[] = [
   "Active",
@@ -20,6 +22,32 @@ export default function DemoBar() {
         Demo controls
       </summary>
       <div className="space-y-3 border-t border-white/10 p-3">
+        <div className="flex gap-1.5" role="group" aria-label="Data source">
+          <button className={`${b} ${v.live ? "bg-white/15" : ""}`} onClick={() => v.setLive(true)}>Sepolia (live)</button>
+          <button className={`${b} ${!v.live ? "bg-white/15" : ""}`} onClick={() => v.setLive(false)}>Local demo</button>
+        </div>
+        {v.live ? (
+          <div className="space-y-1.5 text-xs text-white/70">
+            {v.chain.vault ? (
+              <>
+                <p>Vault <a className="underline" href={addrUrl(v.chain.vault.address)} target="_blank" rel="noreferrer">{short(v.chain.vault.address)}</a> · {formatEther(v.chain.vault.ethBalance)} ETH</p>
+                <p>Guardian votes: {v.chain.vault.currentSignatures} / {v.chain.vault.requiredSignatures}</p>
+                <p>Watch starts {new Date(v.chain.vault.watchStartsAt).toLocaleTimeString()}</p>
+              </>
+            ) : (
+              <p>Reading vault from Sepolia…</p>
+            )}
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              <button className={b} onClick={v.checkIn}>Owner: I'm alive</button>
+              <button className={b} onClick={v.chain.attest}>Guardian: attest</button>
+              <button className={b} onClick={v.cancelRecovery}>Owner: veto</button>
+              <button className={b} onClick={v.advance}>Execute release</button>
+              <button className={b} onClick={v.chain.claimEth}>Heir: claim ETH</button>
+            </div>
+            <p className="text-white/50">Each button sends a real transaction from the connected MetaMask account.</p>
+          </div>
+        ) : (
+        <>
         <div>
           <p className="mb-1.5 text-xs text-white/60">Adversarial scenarios</p>
           <div className="flex flex-wrap gap-1.5">
@@ -52,6 +80,8 @@ export default function DemoBar() {
             ))}
           </select>
         </label>
+        </>
+        )}
         <div className="flex flex-wrap gap-1.5">
           <Link className={b} to="/app">
             Owner

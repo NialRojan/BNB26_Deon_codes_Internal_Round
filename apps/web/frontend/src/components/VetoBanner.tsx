@@ -11,13 +11,19 @@ export default function VetoBanner() {
         <div>
           <p className="font-bold">Someone started recovery on your vault.</p>
           <p className="text-sm">
-            {v.vetoEndsAt ? `Release begins in ${c.d}d ${c.h}h ${c.m}m ${c.s}s unless you cancel.` : 'Guardians are reviewing the request.'}
+            {v.vetoEndsAt ? (c.ms === 0 ? 'The veto window has ended. Anyone can now execute the release.' : `Release begins in ${c.d}d ${c.h}h ${c.m}m ${c.s}s unless you cancel.`) : 'Guardians are reviewing the request.'}
             {v.risk >= 60 && ' The timer was extended after unusual guardian activity.'}
           </p>
         </div>
-        <button onClick={v.cancelRecovery} className="rounded-lg bg-ink px-5 py-3 text-sm font-bold text-white hover:bg-black">
-          Cancel recovery. I am safe.
-        </button>
+        {v.live && v.vetoEndsAt && c.ms === 0 ? (
+          <button onClick={v.advance} className="rounded-lg bg-ink px-5 py-3 text-sm font-bold text-white hover:bg-black">
+            Veto window over. Execute release.
+          </button>
+        ) : (
+          <button onClick={v.cancelRecovery} className="rounded-lg bg-ink px-5 py-3 text-sm font-bold text-white hover:bg-black">
+            Cancel recovery. I am safe.
+          </button>
+        )}
       </div>
     </div>
   )

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useVault } from "../lib/vault";
 import VetoBanner from "./VetoBanner";
 import DemoBar from "./DemoBar";
+import { TxToast, WalletButton } from "./ChainStatus";
 import { Button, StateChip } from "./ui";
 
 const groups = [
@@ -24,7 +25,8 @@ export default function Shell() {
       <nav aria-label="Main navigation">{groups.map(group => <section className="nav-group" key={group.title}><div className="nav-label">{group.title}</div>{group.links.map(([to, label, icon]) => <NavLink key={to} to={to} end={to === "/app"} onClick={() => setOpen(false)} className={({isActive}) => `nav-link ${isActive ? "active" : ""}`}><span className="nav-icon">{icon}</span>{label}</NavLink>)}</section>)}</nav>
       <div className="sidebar-bottom"><NavLink to="/setup" className="nav-link"><span className="nav-icon">⚙</span>Settings</NavLink><div className="user-profile"><span className="avatar">O</span><span><b>Vault owner</b><small>Account administrator</small></span><span className="chevron">···</span></div></div>
     </aside>
-    <div className="main-frame"><VetoBanner /><header className="topbar"><div><div className="eyebrow">HEIRLOOM <span>/</span> OWNER WORKSPACE</div><h1>{title}</h1></div><div className="top-actions"><StateChip state={vault.state}/><span className="secure-indicator"><i/> Demo environment</span><Button onClick={vault.checkIn}>Check in now <span aria-hidden>↗</span></Button></div></header><main className="page-canvas"><Outlet /></main><footer className="app-footer">Your digital legacy, thoughtfully protected <span>Demo environment · Local browser state</span></footer></div>
+    <div className="main-frame"><VetoBanner /><header className="topbar"><div><div className="eyebrow">HEIRLOOM <span>/</span> OWNER WORKSPACE</div><h1>{title}</h1></div><div className="top-actions"><StateChip state={vault.state}/><WalletButton/><Button onClick={vault.checkIn} disabled={!!vault.chain.busy}>Check in now <span aria-hidden>↗</span></Button></div></header><main className="page-canvas"><Outlet /></main><footer className="app-footer">Your digital legacy, thoughtfully protected <span>{vault.live ? "Live · HeirloomVault on Sepolia" : "Demo environment · Local browser state"}</span></footer></div>
     <DemoBar />
+    <TxToast />
   </div>;
 }

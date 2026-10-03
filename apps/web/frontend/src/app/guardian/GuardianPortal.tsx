@@ -13,10 +13,17 @@ export default function GuardianPortal() {
   const v = useVault()
   const [vote, setVote] = useState<Vote | null>(null)
   const [sent, setSent] = useState(false)
-  const pending = v.state === 'TriggerPending' || v.state === 'VetoWindow'
+  const { live, chain } = v
+  // On-chain, guardians may attest once the owner has gone quiet (Watch); the veto window opens at the threshold.
+  const pending = live ? v.state === 'Watch' : v.state === 'TriggerPending' || v.state === 'VetoWindow'
+  const done = live ? chain.hasAttested || v.state === 'VetoWindow' || v.state === 'Executed' : sent
 
-  const submit = () => {
+  const submit = async () => {
     if (!vote) return
+    if (live) {
+      if (vote === 'unsure') return v.log('A guardian could not confirm. No attestation was sent.', 'ok')
+      return chain.attest()
+    }
     setSent(true)
     v.log(`A guardian submitted an attestation. Votes stay hidden until ${v.k} are in.`, 'warn')
   }
@@ -26,8 +33,18 @@ export default function GuardianPortal() {
       <Card>
         <div className="flex items-center gap-2 text-sm text-white/65">
           <span className="h-2 w-2 rounded-full bg-lime" aria-hidden />
-          Signed in on this device. Your attestations only work from here.
+          {!live
+            ? 'Signed in on this device. Your attestations only work from here.'
+            : !chain.account
+              ? 'Connect the guardian wallet to respond.'
+              : chain.role.guardian
+                ? 'Guardian wallet connected. Your attestation is signed by this wallet.'
+                : 'The connected wallet is not a guardian of this vault. Switch accounts in MetaMask.'}
         </div>
+        {live && !chain.account && <Button className="mt-3" onClick={chain.connect}>Connect wallet</Button>}
+        {live && chain.vault && (
+          <p className="mt-2 text-xs text-white/55">{chain.vault.currentSignatures} of {chain.vault.requiredSignatures} guardians have confirmed in this round.</p>
+        )}
       </Card>
 
       {!pending ? (
@@ -35,7 +52,7 @@ export default function GuardianPortal() {
           <h2 className="text-xl font-bold">No recovery requests</h2>
           <p className="mx-auto mt-1 max-w-md text-sm text-white/60">You will be notified here and by message if someone opens one. There is nothing for you to do now.</p>
         </Card>
-      ) : sent ? (
+      ) : done ? (
         <Card>
           <h2 className="text-xl font-bold">Attestation submitted</h2>
           <p className="mt-1 text-sm text-white/60">Thank you. Your answer stays private until {v.k} guardians have responded. The owner can still cancel during the veto window.</p>
@@ -44,8 +61,8 @@ export default function GuardianPortal() {
         <Card>
           <h2 className="text-xl font-bold">Recovery request waiting for you</h2>
           <dl className="mt-4 grid gap-3 text-sm md:grid-cols-3">
-            <div><dt className="text-white/55">Opened by</dt><dd className="font-semibold">A guardian</dd></div>
-            <div><dt className="text-white/55">Evidence</dt><dd className="font-semibold">Death certificate verified</dd></div>
+            <div><dt className="text-white/55">Opened by</dt><dd className="font-semibold">{live ? 'Owner inactive past threshold' : 'A guardian'}</dd></div>
+            <div><dt className="text-white/55">Evidence</dt><dd className="font-semibold">{live ? 'No owner activity on-chain' : 'Death certificate verified'}</dd></div>
             <div><dt className="text-white/55">Needed</dt><dd className="font-semibold">{v.k} guardians</dd></div>
           </dl>
           <fieldset className="mt-5 space-y-2">
@@ -58,7 +75,7 @@ export default function GuardianPortal() {
             ))}
           </fieldset>
           <p className="mt-3 text-xs text-white/55">You will not see how other guardians answered. This keeps anyone from simply following the group.</p>
-          <Button className="mt-4" disabled={!vote} onClick={submit}>Submit attestation</Button>
+          <Button className="mt-4" disabled={!vote || (live && (!chain.role.guardian || !!chain.busy))} onClick={submit}>{chain.busy === 'Confirming' ? 'Submitting…' : 'Submit attestation'}</Button>
         </Card>
       )}
     </Page>

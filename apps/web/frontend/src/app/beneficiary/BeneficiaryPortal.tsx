@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useVault } from '../../lib/vault'
 import { Button, Card, field, Locked, Page } from '../../components/ui'
+import { formatEther } from 'viem'
 
 export default function BeneficiaryPortal() {
   const v = useVault()
@@ -16,8 +17,40 @@ export default function BeneficiaryPortal() {
     setShares([...shares, draft.trim()]); setDraft('')
   }
 
+  const { live, chain } = v
+  const share = chain.vault?.beneficiaries.find((b) => b.wallet.toLowerCase() === chain.account?.toLowerCase())
+
   return (
     <Page title="Heir portal" intro="What you can open depends on your tier and the current release stage. Crypto always opens last.">
+      {live && (
+        <>
+          <h2 className="text-xl font-bold">On-chain inheritance</h2>
+          {v.state !== 'Executed' ? (
+            <Locked title="The vault has not been released" text="ETH unlocks after guardians confirm and the owner's veto window ends." />
+          ) : !chain.account ? (
+            <Card>
+              <p className="text-sm text-white/60">Connect the wallet the owner named as your beneficiary wallet.</p>
+              <Button className="mt-3" onClick={chain.connect}>Connect wallet</Button>
+            </Card>
+          ) : !share ? (
+            <Card><p className="text-sm text-white/60">The connected wallet is not a beneficiary of this vault. Switch accounts in MetaMask.</p></Card>
+          ) : (
+            <Card>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm text-white/60">Your share: {share.bps / 100}% of the vault</p>
+                  <p className="text-2xl font-bold">{chain.hasClaimed ? 'Claimed' : `${formatEther(chain.claimable)} ETH`}</p>
+                  <p className="text-xs text-white/55">Sent straight to your wallet. Nobody else can redirect it.</p>
+                </div>
+                <Button disabled={chain.hasClaimed || chain.claimable === 0n || !!chain.busy} onClick={chain.claimEth}>
+                  {chain.busy === 'Claiming' ? 'Claiming…' : chain.hasClaimed ? 'Already claimed' : 'Claim ETH'}
+                </Button>
+              </div>
+            </Card>
+          )}
+        </>
+      )}
+
       <h2 className="text-xl font-bold">Recovery kit</h2>
       {!kitOpen ? (
         <Locked title="The recovery kit is still locked" text="It opens at stage 2, after a further timelock." />
