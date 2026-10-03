@@ -69,7 +69,7 @@ const toAllocation = (a: { beneficiary: Address; bps: number; unlockAt: bigint; 
 })
 
 export async function readVault(address: Address = VAULT_ADDRESS): Promise<OnChainVault> {
-  const i = await publicClient.readContract({ address, abi: heirloomVaultAbi, functionName: 'getVaultInfo' })
+  const i = await (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'getVaultInfo' })
   return {
     address,
     state: i.state as OnChainState,
@@ -94,32 +94,32 @@ export async function readVault(address: Address = VAULT_ADDRESS): Promise<OnCha
 }
 
 export async function readHasAttested(guardian: Address, address: Address = VAULT_ADDRESS) {
-  return publicClient.readContract({ address, abi: heirloomVaultAbi, functionName: 'hasAttestedThisRound', args: [guardian] })
+  return (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'hasAttestedThisRound', args: [guardian] })
 }
 
 export async function readClaimable(heir: Address, token: Address = ETH, address: Address = VAULT_ADDRESS) {
-  return publicClient.readContract({ address, abi: heirloomVaultAbi, functionName: 'claimable', args: [token, heir] })
+  return (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'claimable', args: [token, heir] })
 }
 
 /** True if `who` is named in any split or NFT rule of the vault. */
 export async function readIsBeneficiary(who: Address, address: Address = VAULT_ADDRESS) {
-  return publicClient.readContract({ address, abi: heirloomVaultAbi, functionName: 'isBeneficiary', args: [who] })
+  return (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'isBeneficiary', args: [who] })
 }
 
 /** Amount of `token` already paid to `heir`. */
 export async function readReleased(heir: Address, token: Address = ETH, address: Address = VAULT_ADDRESS) {
-  return publicClient.readContract({ address, abi: heirloomVaultAbi, functionName: 'released', args: [token, heir] })
+  return (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'released', args: [token, heir] })
 }
 
 /** The split that applies to `token` (its own plan or the default). */
 export async function readPlan(token: Address = ETH, address: Address = VAULT_ADDRESS): Promise<Allocation[]> {
-  const plan = await publicClient.readContract({ address, abi: heirloomVaultAbi, functionName: 'getPlan', args: [token] })
+  const plan = await (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'getPlan', args: [token] })
   return plan.map(toAllocation)
 }
 
 /** Next unlock / installment time for `heir` in `token` (ms, 0 = nothing pending). */
 export async function readNextUnlock(heir: Address, token: Address = ETH, address: Address = VAULT_ADDRESS) {
-  return Number(await publicClient.readContract({ address, abi: heirloomVaultAbi, functionName: 'nextUnlock', args: [token, heir] })) * 1000
+  return Number(await (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'nextUnlock', args: [token, heir] })) * 1000
 }
 
 function wallet() {
