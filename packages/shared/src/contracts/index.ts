@@ -15,6 +15,8 @@ export const deployments = {
     demoVault: "0x8085f0EF193B9dD3F7501394bD3d054c045aB575",
     /** Same setup as demoVault; use for rehearsals so the pitch vault stays untouched. */
     rehearsalVault: "0x0B4E0D3a3c756533acbfe1e64196eA7B731D2bB9",
+    /** Tamper-evidence anchor for the backend audit log. */
+    auditAnchor: "0x13842d3635883c55045c8EF37e0DcBdb2485ae36",
   },
 } as const;
 
