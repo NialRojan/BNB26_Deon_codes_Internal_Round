@@ -17,7 +17,8 @@
     "test:contracts": "cd contracts && forge test",
     "test": "npm run test:crypto && npm run test:api",
     "dev:frontend": "npm run dev --workspace=apps/web/frontend",
-    "build:frontend": "npm run build --workspace=apps/web/frontend"
+    "build:frontend": "npm run build --workspace=apps/web/frontend",
+    "export:run": "npm run build -w @heirloom/shared && node scripts/export-vault-run.mjs"
   },
   "allowScripts": {
     "@prisma/client@6.19.3": true,
