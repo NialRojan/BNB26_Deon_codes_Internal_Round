@@ -13,9 +13,14 @@ export function WalletButton() {
     )
   const roles = Object.entries(chain.role).filter(([, on]) => on).map(([r]) => r)
   return (
-    <a href={addrUrl(chain.account)} target="_blank" rel="noreferrer" className="secure-indicator" title="Connected wallet on Sepolia">
-      <i /> {short(chain.account)} · {roles.length ? roles.join(', ') : 'no role in this vault'}
-    </a>
+    <span className="secure-indicator">
+      <a href={addrUrl(chain.account)} target="_blank" rel="noreferrer" title="View this wallet on Etherscan">
+        <i /> {short(chain.account)} · {roles.length ? roles.join(', ') : 'no role in this vault'}
+      </a>
+      <button onClick={chain.switchAccount} className="ml-2 rounded-md border border-[#cfe3b8] bg-white px-2 py-1 text-[10px] font-semibold text-[#315c3d] hover:bg-[#f3f9ec]">
+        Switch account
+      </button>
+    </span>
   )
 }
 

@@ -10,6 +10,7 @@ import {
 import type { Address } from "viem";
 import {
   connectWallet,
+  switchAccount,
   currentAccount,
   ETH,
   explainError,
@@ -114,6 +115,7 @@ export interface Chain {
   error: string | null;
   lastTx: string | null;
   connect: () => Promise<void>;
+  switchAccount: () => Promise<void>;
   attest: () => Promise<void>;
   claimEth: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -303,6 +305,13 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     connect: async () => {
       try {
         setAccount(await connectWallet());
+      } catch (e) {
+        setError(explainError(e));
+      }
+    },
+    switchAccount: async () => {
+      try {
+        setAccount(await switchAccount());
       } catch (e) {
         setError(explainError(e));
       }

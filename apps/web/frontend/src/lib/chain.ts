@@ -103,6 +103,13 @@ export async function connectWallet(): Promise<Address> {
   return account
 }
 
+/** Open MetaMask's account picker so the user can connect/switch to another account. */
+export async function switchAccount(): Promise<Address> {
+  if (!window.ethereum) throw new Error('No browser wallet found. Install MetaMask.')
+  await window.ethereum.request({ method: 'wallet_requestPermissions', params: [{ eth_accounts: {} }] })
+  return connectWallet()
+}
+
 export async function currentAccount(): Promise<Address | null> {
   if (!window.ethereum) return null
   const [a] = await wallet().getAddresses()
