@@ -94,8 +94,7 @@ export class ContractClient {
   }
 
   async isBeneficiary(vault: string, who: string): Promise<boolean> {
-    const bps = await this.client.readContract({ address: this.vault(vault), abi: heirloomVaultAbi, functionName: "beneficiaryBps", args: [who as Address] });
-    return Number(bps) > 0;
+    return this.client.readContract({ address: this.vault(vault), abi: heirloomVaultAbi, functionName: "isBeneficiary", args: [who as Address] });
   }
 
   async ownerOf(vault: string): Promise<string> {

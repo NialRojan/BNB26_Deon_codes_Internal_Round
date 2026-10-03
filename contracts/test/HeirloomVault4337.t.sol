@@ -144,14 +144,15 @@ contract HeirloomVault4337Test is HeirloomBase {
         _handle(op);
     }
 
-    function test_RevertWhen_HeirClaimsTwiceViaUserOp() public {
+    function test_SecondClaimViaUserOpPaysNothing() public {
         _toExecuted();
         vault.claim(address(token), heirA);
+        uint256 before = token.balanceOf(heirA);
         PackedUserOperation memory op =
             _op(address(vault), abi.encodeCall(HeirloomVault.claim, (address(token), heirA)), "");
         _sign(op, heirAKey);
-        _expectSigFailure();
-        _handle(op);
+        _handle(op); // validates (heir signs for self) but the call reverts with NothingToClaim
+        assertEq(token.balanceOf(heirA), before);
     }
 
     function test_CounterfactualDeployViaInitCode() public {
@@ -163,7 +164,7 @@ contract HeirloomVault4337Test is HeirloomBase {
         bytes memory initCode =
             abi.encodePacked(address(factory), abi.encodeCall(HeirloomVaultFactory.createVault, (cfg, 42)));
         PackedUserOperation memory op = _op(predicted, abi.encodeCall(HeirloomVault.pingHeartbeat, ()), initCode);
-        op.accountGasLimits = bytes32((uint256(5_000_000) << 128) | uint256(300_000));
+        op.accountGasLimits = bytes32((uint256(2_000_000) << 128) | uint256(300_000));
         _sign(op, ownerKey);
         _handle(op);
 

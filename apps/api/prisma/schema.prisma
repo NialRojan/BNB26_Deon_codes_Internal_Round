@@ -167,9 +167,29 @@ model AuditEvent {
   metadata   String?  // JSON string
   createdAt  DateTime @default(now())
 
+  /// Position in the anchored log (assigned when the record is anchored on-chain).
+  anchorSeq     Int?              @unique
+  anchorBatchId Int?
+  anchorBatch   AuditAnchorBatch? @relation(fields: [anchorBatchId], references: [id])
+
   @@index([entityId])
   @@index([eventType])
   @@index([timestamp])
+  @@index([anchorBatchId])
+}
+
+/// A batch of audit records whose Merkle root was committed to HeirloomAuditAnchor on-chain.
+model AuditAnchorBatch {
+  id        Int          @id // batchId in the HeirloomAuditAnchor contract
+  root      String
+  firstSeq  Int
+  count     Int
+  txHash    String
+  contract  String
+  chainId   Int
+  createdAt DateTime     @default(now())
+
+  records   AuditEvent[]
 }
 
 // ---------------------------------------------------------------------------
@@ -201,6 +221,8 @@ model SealedSecret {
   label        String
   asset        String         // EncryptedAsset JSON (ciphertext only)
   threshold    Int
+  /// JSON array of heir addresses (lowercase) allowed to open this secret; null = every heir.
+  recipients   String?
   createdAt    DateTime       @default(now())
 
   shares       EscrowShare[]

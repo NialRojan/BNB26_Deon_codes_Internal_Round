@@ -54,12 +54,13 @@ contract Deploy is Script {
         console.log("HeirloomVaultFactory:", address(factory));
         if (demoVault != address(0)) console.log("Demo HeirloomVault:", demoVault);
 
-        string memory key = "deployment";
-        vm.serializeUint(key, "chainId", block.chainid);
-        vm.serializeAddress(key, "entryPoint", address(ep));
-        vm.serializeAddress(key, "factory", address(factory));
-        string memory json = vm.serializeAddress(key, "demoVault", demoVault);
-        vm.writeJson(json, string.concat(vm.projectRoot(), "/deployments/", vm.toString(block.chainid), ".json"));
+        // Update only the keys this run produced, keeping other addresses (audit anchor, older vaults, ...).
+        string memory path = string.concat(vm.projectRoot(), "/deployments/", vm.toString(block.chainid), ".json");
+        if (!vm.exists(path)) vm.writeJson(string.concat('{"chainId":', vm.toString(block.chainid), "}"), path);
+        vm.writeJson(vm.toString(address(ep)), path, ".entryPoint");
+        vm.writeJson(vm.toString(address(factory)), path, ".factory");
+        vm.writeJson(vm.toString(address(factory.implementation())), path, ".vaultImplementation");
+        if (demoVault != address(0)) vm.writeJson(vm.toString(demoVault), path, ".demoVault");
     }
 
     function _demoConfig(address deployer) internal view returns (HeirloomVault.Config memory cfg) {
@@ -71,9 +72,9 @@ contract Deploy is Script {
         address[] memory heirs = vm.envAddress("DEMO_HEIRS", ",");
         uint256[] memory shares = vm.envUint("DEMO_SHARES", ",");
         require(heirs.length == shares.length, "DEMO_HEIRS / DEMO_SHARES length mismatch");
-        cfg.beneficiaries = new HeirloomVault.Beneficiary[](heirs.length);
+        cfg.defaultAllocations = new HeirloomVault.Allocation[](heirs.length);
         for (uint256 i = 0; i < heirs.length; i++) {
-            cfg.beneficiaries[i] = HeirloomVault.Beneficiary(heirs[i], uint16(shares[i]));
+            cfg.defaultAllocations[i] = HeirloomVault.Allocation(heirs[i], uint16(shares[i]), 0, 1, 0);
         }
 
         cfg.inactivityThreshold = uint64(vm.envOr("DEMO_INACTIVITY_SECONDS", uint256(120)));

@@ -17,10 +17,14 @@ import {
   onAccountsChanged,
   readClaimable,
   readHasAttested,
-  readHasClaimed,
+  readReleased,
+  readIsBeneficiary,
+  readPlan,
+  readNextUnlock,
   readVault,
   writeVault,
   type OnChainVault,
+  type Allocation,
 } from "./chain";
 // TODO: replace these local types with imports from packages/shared once the schema is agreed.
 export type VaultState =
@@ -110,7 +114,14 @@ export interface Chain {
   role: { owner: boolean; guardian: boolean; heir: boolean; executor: boolean };
   hasAttested: boolean;
   claimable: bigint;
+  /** True once everything currently due has been paid and nothing is scheduled. */
   hasClaimed: boolean;
+  /** ETH already paid to the connected wallet. */
+  released: bigint;
+  /** The split that applies to ETH (its own plan or the default). */
+  ethPlan: Allocation[];
+  /** Next unlock / installment time for the connected heir (ms, 0 = none). */
+  nextUnlock: number;
   busy: string | null;
   error: string | null;
   lastTx: string | null;
@@ -228,7 +239,10 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   const [account, setAccount] = useState<Address | null>(null);
   const [hasAttested, setHasAttested] = useState(false);
   const [claimable, setClaimable] = useState<bigint>(0n);
-  const [hasClaimed, setHasClaimed] = useState(false);
+  const [releasedAmt, setReleasedAmt] = useState<bigint>(0n);
+  const [ethPlan, setEthPlan] = useState<Allocation[]>([]);
+  const [nextUnlock, setNextUnlock] = useState(0);
+  const [isHeir, setIsHeir] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastTx, setLastTx] = useState<string | null>(null);
@@ -238,20 +252,25 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     try {
       const v = await readVault();
       setCv(v);
+      setEthPlan(await readPlan(ETH));
       if (prevState.current !== null && prevState.current !== v.state) {
         const tone = v.state === 0 ? "ok" : v.state === 3 ? "risk" : "warn";
         log(`On-chain: vault is now ${["Active", "Watch", "TriggerPending", "Executed"][v.state]}.`, tone);
       }
       prevState.current = v.state;
       if (account) {
-        const [att, cl, done] = await Promise.all([
+        const [att, cl, rel, next, heir] = await Promise.all([
           readHasAttested(account),
           readClaimable(account, ETH),
-          readHasClaimed(account, ETH),
+          readReleased(account, ETH),
+          readNextUnlock(account, ETH),
+          readIsBeneficiary(account),
         ]);
+        setIsHeir(heir);
         setHasAttested(att);
         setClaimable(cl);
-        setHasClaimed(done);
+        setReleasedAmt(rel);
+        setNextUnlock(next);
       }
     } catch (e) {
       setError(explainError(e));
@@ -288,7 +307,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   const role = {
     owner: eq(account, cv?.owner),
     guardian: !!cv?.guardians.some((g) => eq(g, account)),
-    heir: !!cv?.beneficiaries.some((b) => eq(b.wallet, account)),
+    heir: !!account && isHeir,
     executor: eq(account, cv?.executor),
   };
 
@@ -298,7 +317,10 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     role,
     hasAttested,
     claimable,
-    hasClaimed,
+    hasClaimed: releasedAmt > 0n && claimable === 0n && nextUnlock === 0,
+    released: releasedAmt,
+    ethPlan,
+    nextUnlock,
     busy,
     error,
     lastTx,

@@ -20,8 +20,10 @@ SALT=${SALT:-1}
 NAME=${NAME:-demoVault}   # key written in deployments/11155111.json
 FUND=${FUND:-0.02ether}
 
-SIG='(address,address,address[],uint256,(address,uint16)[],uint64,uint64,string)'
-CFG="($OWNER,$HEIR_A,[$G1,$G2,$G3],2,[($HEIR_A,6000),($HEIR_B,4000)],120,180,ipfs://heirloom-demo-asset-map)"
+ALLOC='(address,uint16,uint64,uint16,uint32)'
+SIG="(address,address,address[],uint256,uint64,uint64,string,$ALLOC[],(address,$ALLOC[])[],(address,uint256,address,uint64)[],address)"
+# owner, executor, guardians, threshold, inactivity, veto, assetMap, default split (60/40, no conditions), no token plans, no NFT rules, NFT fallback = Heir A
+CFG="($OWNER,$HEIR_A,[$G1,$G2,$G3],2,120,180,ipfs://heirloom-demo-asset-map,[($HEIR_A,6000,0,1,0),($HEIR_B,4000,0,1,0)],[],[],$HEIR_A)"
 
 VAULT=$(cast call "$FACTORY" "getAddress($SIG,uint256)(address)" "$CFG" $SALT --rpc-url "$RPC")
 echo "Factory : $FACTORY"

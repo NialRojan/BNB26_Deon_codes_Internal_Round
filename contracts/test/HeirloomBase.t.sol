@@ -57,9 +57,9 @@ abstract contract HeirloomBase is Test {
         cfg.executor = executor;
         cfg.guardians = guardians;
         cfg.requiredSignatures = 3;
-        cfg.beneficiaries = new HeirloomVault.Beneficiary[](2);
-        cfg.beneficiaries[0] = HeirloomVault.Beneficiary(heirA, 6_000);
-        cfg.beneficiaries[1] = HeirloomVault.Beneficiary(heirB, 4_000);
+        cfg.defaultAllocations = new HeirloomVault.Allocation[](2);
+        cfg.defaultAllocations[0] = HeirloomVault.Allocation(heirA, 6_000, 0, 1, 0);
+        cfg.defaultAllocations[1] = HeirloomVault.Allocation(heirB, 4_000, 0, 1, 0);
         cfg.inactivityThreshold = INACTIVITY;
         cfg.vetoGracePeriod = VETO;
         cfg.assetMapCID = "ipfs://bafy-asset-map";

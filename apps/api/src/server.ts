@@ -4,12 +4,14 @@ import { logger } from "./config/logger.js";
 import { HeartbeatScheduler } from "./heartbeat/scheduler.js";
 import { createChainClient } from "./chain/contractClient.js";
 import { VaultEventWatcher } from "./chain/vaultWatcher.js";
+import { AuditAnchorService, createChainAnchorWriter } from "./chain/auditAnchor.js";
 import type { Address } from "viem";
 
 export const app = createApp();
 
 let server: import("http").Server | undefined;
 let chainWatcher: VaultEventWatcher | undefined;
+let auditAnchor: AuditAnchorService | undefined;
 
 if (process.env.NODE_ENV !== "test") {
   server = app.listen(config.PORT, () => {
@@ -31,6 +33,15 @@ if (process.env.NODE_ENV !== "test") {
       });
       chainWatcher.start();
     }
+
+    // Commit the audit log's Merkle root on-chain so database edits become detectable
+    if (config.ANCHOR_CONTRACT_ADDRESS && config.ANCHOR_PRIVATE_KEY) {
+      const rpc = config.ANCHOR_RPC_URL || config.RPC_URL;
+      auditAnchor = new AuditAnchorService(
+        createChainAnchorWriter(createChainClient(rpc), config.ANCHOR_CONTRACT_ADDRESS as Address, config.ANCHOR_PRIVATE_KEY as `0x${string}`, rpc)
+      );
+      auditAnchor.start(config.ANCHOR_INTERVAL_MS);
+    }
   });
 
   // Graceful shutdown handling
@@ -38,6 +49,7 @@ if (process.env.NODE_ENV !== "test") {
     logger.info(`Received ${signal}. Initiating graceful shutdown...`);
     HeartbeatScheduler.stopScheduler();
     chainWatcher?.stop();
+    auditAnchor?.stop();
 
     if (server) {
       server.close(() => {

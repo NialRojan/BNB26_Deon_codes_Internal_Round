@@ -50,6 +50,7 @@ export const REACTIONS: Record<string, Reaction> = {
     alert: { type: "VAULT_RELEASED", severity: "CRITICAL", message: () => "The vault has been released. Heirs can now claim and decrypt." },
   },
   Claimed: { audit: "STAGE_RELEASED" },
+  NftClaimed: { audit: "STAGE_RELEASED" },
 };
 
 /**
@@ -116,7 +117,7 @@ export class VaultEventWatcher {
 
     const owner = await this.ownerForVault();
     const metadata = {
-      vault: this.vaultAddress,
+      contract: this.vaultAddress,
       event: ev.eventName,
       txHash: ev.transactionHash,
       blockNumber: ev.blockNumber?.toString(),

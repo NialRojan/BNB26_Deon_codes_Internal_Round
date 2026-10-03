@@ -16,51 +16,52 @@ contract HeirloomVaultTest is HeirloomBase {
         assertEq(vault.executor(), executor);
         assertEq(vault.requiredSignatures(), 3);
         assertEq(vault.getGuardians().length, 5);
-        assertEq(vault.beneficiaryBps(heirA), 6_000);
+        assertTrue(vault.isBeneficiary(heirA));
+        assertEq(vault.getPlan(address(0))[0].bps, 6_000);
         assertEq(vault.lastHeartbeat(), block.timestamp);
         assertFalse(vault.isExecuted());
     }
 
     function test_RevertWhen_SharesDoNotSumTo10000() public {
         HeirloomVault.Config memory cfg = _config();
-        cfg.beneficiaries[1].bps = 3_999;
+        cfg.defaultAllocations[1].bps = 3_999;
         vm.expectRevert(abi.encodeWithSelector(HeirloomVault.InvalidConfig.selector, "shares != 10000"));
-        new HeirloomVault(IEntryPoint(address(entryPoint)), cfg);
+        factory.createVault(cfg, 99);
     }
 
     function test_RevertWhen_ThresholdAboveGuardianCount() public {
         HeirloomVault.Config memory cfg = _config();
         cfg.requiredSignatures = 6;
         vm.expectRevert(abi.encodeWithSelector(HeirloomVault.InvalidConfig.selector, "threshold"));
-        new HeirloomVault(IEntryPoint(address(entryPoint)), cfg);
+        factory.createVault(cfg, 99);
     }
 
     function test_RevertWhen_DuplicateGuardian() public {
         HeirloomVault.Config memory cfg = _config();
         cfg.guardians[1] = cfg.guardians[0];
         vm.expectRevert(abi.encodeWithSelector(HeirloomVault.InvalidConfig.selector, "duplicate guardian"));
-        new HeirloomVault(IEntryPoint(address(entryPoint)), cfg);
+        factory.createVault(cfg, 99);
     }
 
     function test_RevertWhen_OwnerIsGuardian() public {
         HeirloomVault.Config memory cfg = _config();
         cfg.guardians[0] = owner;
         vm.expectRevert(abi.encodeWithSelector(HeirloomVault.InvalidConfig.selector, "guardian address"));
-        new HeirloomVault(IEntryPoint(address(entryPoint)), cfg);
+        factory.createVault(cfg, 99);
     }
 
     function test_RevertWhen_OwnerIsBeneficiary() public {
         HeirloomVault.Config memory cfg = _config();
-        cfg.beneficiaries[0].wallet = owner;
+        cfg.defaultAllocations[0].beneficiary = owner;
         vm.expectRevert(abi.encodeWithSelector(HeirloomVault.InvalidConfig.selector, "beneficiary address"));
-        new HeirloomVault(IEntryPoint(address(entryPoint)), cfg);
+        factory.createVault(cfg, 99);
     }
 
     function test_RevertWhen_ZeroTiming() public {
         HeirloomVault.Config memory cfg = _config();
         cfg.vetoGracePeriod = 0;
         vm.expectRevert(abi.encodeWithSelector(HeirloomVault.InvalidConfig.selector, "timing=0"));
-        new HeirloomVault(IEntryPoint(address(entryPoint)), cfg);
+        factory.createVault(cfg, 99);
     }
 
     function test_OwnerCanUpdateGuardiansAndOldOnesLoseRole() public {
@@ -75,12 +76,12 @@ contract HeirloomVaultTest is HeirloomBase {
     }
 
     function test_OwnerCanUpdateBeneficiariesAndOldOnesLoseShare() public {
-        HeirloomVault.Beneficiary[] memory bs = new HeirloomVault.Beneficiary[](1);
-        bs[0] = HeirloomVault.Beneficiary(heirB, 10_000);
+        HeirloomVault.Allocation[] memory bs = new HeirloomVault.Allocation[](1);
+        bs[0] = HeirloomVault.Allocation(heirB, 10_000, 0, 1, 0);
         vm.prank(owner);
-        vault.setBeneficiaries(bs);
-        assertEq(vault.beneficiaryBps(heirA), 0);
-        assertEq(vault.beneficiaryBps(heirB), 10_000);
+        vault.setDefaultPlan(bs);
+        assertFalse(vault.isBeneficiary(heirA));
+        assertEq(vault.getPlan(address(0))[0].bps, 10_000);
     }
 
     function test_RevertWhen_StrangerConfigures() public {
@@ -312,13 +313,13 @@ contract HeirloomVaultTest is HeirloomBase {
     function test_RevertWhen_ClaimTwice() public {
         _toExecuted();
         vault.claim(address(0), heirA);
-        vm.expectRevert(HeirloomVault.AlreadyClaimed.selector);
+        vm.expectRevert(HeirloomVault.NothingToClaim.selector);
         vault.claim(address(0), heirA);
     }
 
     function test_RevertWhen_NonBeneficiaryClaims() public {
         _toExecuted();
-        vm.expectRevert(HeirloomVault.NotBeneficiary.selector);
+        vm.expectRevert(HeirloomVault.NothingToClaim.selector);
         vault.claim(address(0), stranger);
     }
 
@@ -329,19 +330,22 @@ contract HeirloomVaultTest is HeirloomBase {
         vault.claim(address(empty), heirA);
     }
 
-    function test_LaterClaimersShareBalanceChangesFairly() public {
+    function test_LateDepositsAreSplitByThePlan() public {
         _toExecuted();
-        vault.claim(address(0), heirA); // 6 ether
-        vm.deal(address(vault), 5 ether); // balance changed after first claim (e.g. gas spent / top-up)
-        vault.claim(address(0), heirB); // last claimer takes the remainder
-        assertEq(heirB.balance, 5 ether);
+        vault.claim(address(0), heirA); // 6 of 10 ether
+        vm.deal(address(vault), 5 ether); // 4 left + 1 ether arrives after the first claim
+        vault.claim(address(0), heirB); // 40% of the 11 ether ever held
+        assertEq(heirB.balance, 4.4 ether);
+        assertEq(vault.claimable(address(0), heirA), 0.6 ether); // 60% of 11 = 6.6, 6 already paid
+        vault.claim(address(0), heirA);
+        assertEq(address(vault).balance, 0);
     }
 
     function testFuzz_ClaimsNeverExceedBalance(uint16 bpsA, uint96 ethAmount, uint96 tokenAmount) public {
         bpsA = uint16(bound(bpsA, 1, 9_999));
         HeirloomVault.Config memory cfg = _config();
-        cfg.beneficiaries[0].bps = bpsA;
-        cfg.beneficiaries[1].bps = 10_000 - bpsA;
+        cfg.defaultAllocations[0].bps = bpsA;
+        cfg.defaultAllocations[1].bps = 10_000 - bpsA;
         vault = factory.createVault(cfg, 1);
         vm.deal(address(vault), ethAmount);
         token.mint(address(vault), tokenAmount);
