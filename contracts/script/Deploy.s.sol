@@ -10,7 +10,7 @@ import {HeirloomVaultFactory} from "../src/HeirloomVaultFactory.sol";
 /// @notice Deploys the factory (and, optionally, a demo vault with short timers).
 ///
 /// Env:
-///   PRIVATE_KEY              deployer key (required)
+///   PRIVATE_KEY              deployer key (optional; otherwise use --account/--sender)
 ///   DEPLOY_DEMO_VAULT        "true" to also deploy a demo vault (default false)
 ///   DEMO_OWNER               vault owner                         (default: deployer)
 ///   DEMO_EXECUTOR            executor address                    (default: address(0))
@@ -28,10 +28,16 @@ contract Deploy is Script {
     address internal constant ENTRYPOINT_V07 = 0x0000000071727De22E5E9d8BAf0edAc6f37da032;
 
     function run() external {
-        uint256 pk = vm.envUint("PRIVATE_KEY");
-        address deployer = vm.addr(pk);
-
-        vm.startBroadcast(pk);
+        // Either PRIVATE_KEY in env, or an encrypted keystore via `--account <name> --sender <address>`.
+        uint256 pk = vm.envOr("PRIVATE_KEY", uint256(0));
+        address deployer;
+        if (pk != 0) {
+            deployer = vm.addr(pk);
+            vm.startBroadcast(pk);
+        } else {
+            deployer = msg.sender;
+            vm.startBroadcast();
+        }
 
         IEntryPoint ep = block.chainid == 31337 ? IEntryPoint(address(new EntryPoint())) : IEntryPoint(ENTRYPOINT_V07);
         require(address(ep).code.length > 0, "EntryPoint not deployed on this chain");

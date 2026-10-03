@@ -4,3 +4,4 @@ broadcast/*/31337/
 broadcast/**/dry-run/
 deployments/31337.json
 .env
+broadcast/**/*.lock

@@ -9,6 +9,15 @@ ERC-4337 smart-account vault with a guardian-attested, veto-protected inheritanc
 
 EntryPoint: canonical v0.7 `0x0000000071727De22E5E9d8BAf0edAc6f37da032`.
 
+## Live deployment (Sepolia, chain 11155111)
+
+| Contract | Address |
+|---|---|
+| HeirloomVaultFactory | [`0xb99c8F7257Cf03ACDd019EFe7C86bbfCb1d513B3`](https://sepolia.etherscan.io/address/0xb99c8f7257cf03acdd019efe7c86bbfcb1d513b3#code) (verified) |
+| EntryPoint v0.7 | `0x0000000071727De22E5E9d8BAf0edAc6f37da032` |
+
+Machine-readable: `deployments/11155111.json`. Vaults are created per user via `factory.createVault(cfg, salt)`.
+
 ## Lifecycle
 
 ```
@@ -44,6 +53,8 @@ forge test            # 57 tests, including real EntryPoint UserOp flows
 cp .env.example .env    # fill in RPC URL, Etherscan key, deployer key, demo vault addresses
 source .env
 forge script script/Deploy.s.sol --rpc-url sepolia --broadcast --verify
+# or, with an encrypted keystore (`cast wallet import deployer --interactive`):
+./script/deploy-sepolia.sh
 ```
 
 This writes `deployments/<chainId>.json` with `entryPoint`, `factory` and `demoVault`.
