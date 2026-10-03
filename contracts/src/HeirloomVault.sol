@@ -120,6 +120,10 @@ contract HeirloomVault is BaseAccount, ReentrancyGuard {
     mapping(address token => uint256) public claimedBps;
     mapping(address token => mapping(address heir => bool)) public hasClaimed;
 
+    /// @notice Off-chain activity reporters (e.g. a bank-transaction oracle) approved by the owner.
+    ///         They can only prove liveness: refresh the heartbeat while no trigger is pending.
+    mapping(address => bool) public isHeartbeatSource;
+
     // ---------------------------------------------------------------------
     // Events
     // ---------------------------------------------------------------------
@@ -137,6 +141,8 @@ contract HeirloomVault is BaseAccount, ReentrancyGuard {
     event ExecutorUpdated(address indexed executor);
     event AssetMapUpdated(string cid);
     event TimingsUpdated(uint64 inactivityThreshold, uint64 vetoGracePeriod);
+    event HeartbeatSourceUpdated(address indexed source, bool allowed);
+    event ActivityRecorded(address indexed source, uint256 activityTimestamp, uint256 indexed epoch);
 
     // ---------------------------------------------------------------------
     // Errors
@@ -157,6 +163,8 @@ contract HeirloomVault is BaseAccount, ReentrancyGuard {
     error EthTransferFailed();
     error InvalidConfig(string reason);
     error ArrayLengthMismatch();
+    error NotHeartbeatSource();
+    error InvalidActivityTimestamp();
 
     // ---------------------------------------------------------------------
     // Modifiers
@@ -301,9 +309,36 @@ contract HeirloomVault is BaseAccount, ReentrancyGuard {
         emit AssetMapUpdated(cid);
     }
 
+    /// @notice Approve or remove an off-chain activity reporter (e.g. the bank-activity oracle).
+    function setHeartbeatSource(address source, bool allowed) external onlyOwner {
+        _heartbeat();
+        if (source == address(0) || source == owner) revert InvalidConfig("heartbeat source");
+        isHeartbeatSource[source] = allowed;
+        emit HeartbeatSourceUpdated(source, allowed);
+    }
+
     function setTimings(uint64 inactivityThreshold_, uint64 vetoGracePeriod_) external onlyOwner {
         _heartbeat();
         _setTimings(inactivityThreshold_, vetoGracePeriod_);
+    }
+
+    // ---------------------------------------------------------------------
+    // Off-chain liveness (heartbeat sources)
+    // ---------------------------------------------------------------------
+
+    /// @notice Report that the owner did something only a living person can do (e.g. a PIN-authorised
+    ///         UPI payment) at `activityTimestamp`. Refreshes the heartbeat and discards stale guardian
+    ///         votes. Deliberately cannot cancel a pending trigger: once guardians reach the threshold,
+    ///         only the owner's own veto counts, so a compromised source can delay but never block.
+    function recordActivity(uint64 activityTimestamp) external {
+        if (!isHeartbeatSource[msg.sender]) revert NotHeartbeatSource();
+        if (_storedState != VaultState.Active) revert InvalidState(currentState());
+        if (activityTimestamp <= lastHeartbeat || activityTimestamp > block.timestamp) {
+            revert InvalidActivityTimestamp();
+        }
+        lastHeartbeat = activityTimestamp;
+        uint256 newEpoch = ++epoch;
+        emit ActivityRecorded(msg.sender, activityTimestamp, newEpoch);
     }
 
     // ---------------------------------------------------------------------

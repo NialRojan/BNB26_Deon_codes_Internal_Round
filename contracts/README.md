@@ -34,7 +34,7 @@ curl -L https://foundry.paradigm.xyz | bash && foundryup
 git submodule update --init --recursive
 cd contracts
 forge build
-forge test            # 47 tests, including real EntryPoint UserOp flows
+forge test            # 57 tests, including real EntryPoint UserOp flows
 ./script/demo-local.sh  # full lifecycle on a local anvil chain
 ```
 
@@ -66,6 +66,7 @@ This writes `deployments/<chainId>.json` with `entryPoint`, `factory` and `demoV
 | Finalize | anyone | `executeRelease()` (after `vetoEndTime`) |
 | Claim | heir / anyone | `claim(tokenOr0x0, heir)`; preview with `claimable(token, heir)` |
 | Settings | owner | `setGuardians`, `setBeneficiaries`, `setExecutor`, `setAssetMapCID`, `setTimings` |
+| Connect bank | owner | `setHeartbeatSource(oracleAddress, true)` after the bank consent flow |
 
 `Config` struct: `{ owner, executor, guardians[], requiredSignatures, beneficiaries[{wallet, bps}], inactivityThreshold, vetoGracePeriod, assetMapCID }`. Shares must sum to 10000. The owner cannot be a guardian or heir.
 
@@ -87,6 +88,16 @@ Webhook on these vault events:
 | `ReleaseExecuted(ts)` | inheritance released | notify executor + heirs |
 | `Claimed(heir, token, amount)` | heir paid | receipt |
 | `HeartbeatPinged(ts, epoch)` | owner alive | reset reminder timers |
+| `ActivityRecorded(source, ts, epoch)` | bank/off-chain activity counted | reset reminder timers |
 | `VaultCreated(vault, owner, salt)` *(factory)* | new user | start monitoring |
 
 There is no `Watch` event, because time passing doesn't produce a transaction. The cron job should poll `currentState()` or `watchStartsAt()` and remind the owner to `pingHeartbeat()` before `watchStartsAt`.
+
+### Bank activity as heartbeat (Member 3)
+The owner approves an oracle address with `setHeartbeatSource(oracle, true)`. The backend holds that key and calls
+`recordActivity(txTimestamp)` when it sees a **user-initiated** transaction (PIN-authorised UPI, card, ATM, net-banking
+login). Auto-debits (NACH/ECS/SI/EMI/SIP/UPI AutoPay) and credits must be filtered out, because they continue after death.
+
+The source can only refresh the heartbeat. It cannot move funds, vote, change settings, or cancel a pending trigger
+(only the owner's veto can). `activityTimestamp` must be newer than `lastHeartbeat` and not in the future. Report at most
+about once a day to save gas.
