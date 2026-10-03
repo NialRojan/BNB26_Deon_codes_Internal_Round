@@ -15,6 +15,11 @@ EntryPoint: canonical v0.7 `0x0000000071727De22E5E9d8BAf0edAc6f37da032`.
 |---|---|
 | HeirloomVaultFactory | [`0xb99c8F7257Cf03ACDd019EFe7C86bbfCb1d513B3`](https://sepolia.etherscan.io/address/0xb99c8f7257cf03acdd019efe7c86bbfcb1d513b3#code) (verified) |
 | EntryPoint v0.7 | `0x0000000071727De22E5E9d8BAf0edAc6f37da032` |
+| Demo vault (pitch) | [`0x8085f0EF193B9dD3F7501394bD3d054c045aB575`](https://sepolia.etherscan.io/address/0x8085f0EF193B9dD3F7501394bD3d054c045aB575#code) (verified) |
+
+Demo vault setup: owner `0x668A…AF84`; guardians `0x0915…1cdD`, `0xa5Bf…8Ea6`, `0x8bcF…a434` (2 of 3); heirs
+`0x6616…c71D` 60% (also executor) and `0x806D…EddA` 40%; 120 s inactivity, 180 s veto window. Re-create with
+`script/create-demo-vault-sepolia.sh`.
 
 Machine-readable: `deployments/11155111.json`. Vaults are created per user via `factory.createVault(cfg, salt)`.
 
