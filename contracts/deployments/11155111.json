@@ -7,5 +7,7 @@
     "demoVault": "0x8085f0EF193B9dD3F7501394bD3d054c045aB575",
     "rehearsalVault": "0x0B4E0D3a3c756533acbfe1e64196eA7B731D2bB9",
     "note": "v1 contracts (single default split). Superseded by the v2 factory; kept for the record."
-  }
+  },
+  "factory": "0x2f1E33Fd68E5a22Eb9cea78383356849F6445807",
+  "vaultImplementation": "0x89415eE4B3bbd76a9e7E88647F709F55404C0b37"
 }

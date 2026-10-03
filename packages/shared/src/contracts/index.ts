@@ -12,7 +12,8 @@ export const deployments = {
     chainId: SEPOLIA_CHAIN_ID,
     entryPoint: "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
     /** v2 factory (estate plans, gasless guardian votes, clones). Filled in after deployment. */
-    factory: "0x0000000000000000000000000000000000000000",
+    factory: "0x2f1E33Fd68E5a22Eb9cea78383356849F6445807",
+    vaultImplementation: "0x89415eE4B3bbd76a9e7E88647F709F55404C0b37",
     /** v2 pitch/demo vault. Filled in after creation. */
     demoVault: "0x0000000000000000000000000000000000000000",
     /** v2 rehearsal vault. Filled in after creation. */
