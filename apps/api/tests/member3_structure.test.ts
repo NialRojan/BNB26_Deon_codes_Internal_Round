@@ -224,14 +224,24 @@ describe("Member 3 Module Suite (Heartbeat, Watch, Fraud, Documents, Chain, Rout
     expect(verif.success).toBe(true);
     expect(verif.decision).toBe("VERIFIED");
 
-    // 3. ContractClient
-    const client = new ContractClient();
+    // 3. ContractClient (stubbed chain: reads HeirloomVault.getVaultInfo)
+    const fakeChain = {
+      readContract: async () => ({
+        state: 0, owner: "0x668A3BB33A89E2fF21652E190fB425a59D46AF84", executor: "0x0000000000000000000000000000000000000000",
+        assetMapCID: "", lastHeartbeat: 1n, inactivityThreshold: 120n, vetoGracePeriod: 180n, watchStartsAt: 121n,
+        vetoEndTime: 0n, executedAt: 0n, epoch: 1n, currentSignatures: 0n, requiredSignatures: 2n,
+        guardians: ["0x1", "0x2", "0x3"], beneficiaries: [], ethBalance: 0n,
+      }),
+    } as unknown as import("viem").PublicClient;
+    const client = new ContractClient("http://unused", "0x8085f0EF193B9dD3F7501394bD3d054c045aB575", fakeChain);
     const chainState = await client.getVaultState("vault_1");
     expect(chainState.state).toBe(VaultState.ACTIVE);
+    expect(chainState.guardianCount).toBe(3);
+    expect(chainState.thresholdK).toBe(2);
 
+    // The contract gives the backend no power to change vault state.
     const vetoTx = await client.extendVetoOnChain("rec_claim_doc_999", 14);
-    expect(vetoTx.success).toBe(true);
-    expect(vetoTx.txHash).toContain("0x_mock_tx_extend_veto");
+    expect(vetoTx.success).toBe(false);
   });
 
   it("exercises Member 3 routes: /vault, /guardians, /attestations, /claims", async () => {

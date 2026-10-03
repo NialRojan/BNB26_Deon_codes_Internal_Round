@@ -1,5 +1,6 @@
 import { Router } from "express";
 import vaultRoutes from "./vault.js";
+import chainRoutes from "./chain.js";
 import guardiansRoutes from "./guardians.js";
 import attestationsRoutes from "./attestations.js";
 import claimsRoutes from "./claims.js";
@@ -21,6 +22,7 @@ router.get("/health", (_req, res) => {
 
 // Member 3 Specified Routes
 router.use("/vault", vaultRoutes);
+router.use("/chain", chainRoutes);
 router.use("/guardians", guardiansRoutes);
 router.use("/attestations", attestationsRoutes);
 router.use("/claims", claimsRoutes);

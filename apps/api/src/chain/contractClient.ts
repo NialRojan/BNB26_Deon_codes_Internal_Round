@@ -1,58 +1,104 @@
+import { createPublicClient, http, isAddress, type Address, type PublicClient } from "viem";
+import { sepolia } from "viem/chains";
 import { logger } from "../config/logger.js";
-import { VaultState } from "@heirloom/shared";
+import { VaultState, heirloomVaultAbi, deployments } from "@heirloom/shared";
 
 export interface OnChainVaultStateResponse {
   vaultAddress: string;
   state: VaultState;
+  /** Raw HeirloomVault.currentState(): 0 Active, 1 Watch, 2 TriggerPending, 3 Executed */
+  onChainState: number;
+  owner: string;
   guardianCount: number;
   thresholdK: number;
+  currentSignatures: number;
   vetoTimerActive: boolean;
   vetoDeadlineTimestamp?: number;
+  lastHeartbeatTimestamp: number;
+  watchStartsAtTimestamp: number;
+  executedAtTimestamp?: number;
+  ethBalanceWei: string;
 }
 
+/** Contract state (uint8) -> backend lifecycle state (packages/shared VaultState). */
+export const ON_CHAIN_TO_VAULT_STATE: Record<number, VaultState> = {
+  0: VaultState.ACTIVE,
+  1: VaultState.WATCH,
+  2: VaultState.VETO_ACTIVE,
+  3: VaultState.RELEASED,
+};
+
+export function createChainClient(rpcUrl: string): PublicClient {
+  return createPublicClient({ chain: sepolia, transport: http(rpcUrl) }) as PublicClient;
+}
+
+/**
+ * Reads HeirloomVault (Member 2) state from Sepolia.
+ *
+ * The backend only reads the chain. Owner vetoes and guardian attestations are signed by the
+ * owner's / guardians' own wallets in the frontend; the contract deliberately gives the backend no
+ * power to change vault state.
+ */
 export class ContractClient {
+  private readonly client: PublicClient;
+
   constructor(
-    private readonly rpcUrl = process.env.RPC_URL || "http://127.0.0.1:8545",
-    private readonly contractAddress = process.env.VAULT_CONTRACT_ADDRESS || "0x0000000000000000000000000000000000000000"
-  ) {}
+    private readonly rpcUrl = process.env.RPC_URL || "https://ethereum-sepolia-rpc.publicnode.com",
+    private readonly contractAddress = process.env.VAULT_CONTRACT_ADDRESS || deployments.sepolia.demoVault,
+    client?: PublicClient
+  ) {
+    this.client = client ?? createChainClient(this.rpcUrl);
+  }
 
-  /**
-   * Reads on-chain vault state from HeirloomVault.sol.
-   */
-  async getVaultState(vaultId: string): Promise<OnChainVaultStateResponse> {
-    logger.info(`[ContractClient] Querying on-chain state for vault ${vaultId} at ${this.contractAddress}`);
+  get defaultVaultAddress(): string {
+    return this.contractAddress;
+  }
 
-    // In local/mock dev mode, return structured response compatible with Member 2
+  /** Reads on-chain vault state from HeirloomVault.sol. `vaultId` may be a vault address; otherwise the configured vault is used. */
+  async getVaultState(vaultId?: string): Promise<OnChainVaultStateResponse> {
+    const address = (vaultId && isAddress(vaultId) ? vaultId : this.contractAddress) as Address;
+    logger.info(`[ContractClient] Reading on-chain state for vault ${address}`);
+
+    const info = await this.client.readContract({ address, abi: heirloomVaultAbi, functionName: "getVaultInfo" });
+    const onChainState = Number(info.state);
+    const vetoEnd = Number(info.vetoEndTime);
+    const executedAt = Number(info.executedAt);
+
     return {
-      vaultAddress: this.contractAddress,
-      state: VaultState.ACTIVE,
-      guardianCount: 3,
-      thresholdK: 2,
-      vetoTimerActive: false,
+      vaultAddress: address,
+      state: ON_CHAIN_TO_VAULT_STATE[onChainState],
+      onChainState,
+      owner: info.owner,
+      guardianCount: info.guardians.length,
+      thresholdK: Number(info.requiredSignatures),
+      currentSignatures: Number(info.currentSignatures),
+      vetoTimerActive: onChainState === 2,
+      vetoDeadlineTimestamp: vetoEnd > 0 ? vetoEnd : undefined,
+      lastHeartbeatTimestamp: Number(info.lastHeartbeat),
+      watchStartsAtTimestamp: Number(info.watchStartsAt),
+      executedAtTimestamp: executedAt > 0 ? executedAt : undefined,
+      ethBalanceWei: info.ethBalance.toString(),
     };
   }
 
   /**
-   * Invokes VetoTimer.sol to extend the veto countdown on high risk detection.
+   * Not supported on-chain: the veto window length is fixed per vault and only the owner can change
+   * timings. A high fraud score should instead alert the owner so they veto from their wallet.
    */
   async extendVetoOnChain(recoveryClaimId: string, additionalDays: number): Promise<{ txHash: string; success: boolean }> {
-    logger.info(`[ContractClient] Submitting on-chain veto extension of +${additionalDays}d for claim ${recoveryClaimId}`);
-    const simulatedTxHash = `0x_mock_tx_extend_veto_${recoveryClaimId.substring(0, 8)}_${Date.now()}`;
-    return {
-      txHash: simulatedTxHash,
-      success: true,
-    };
+    logger.warn(
+      `[ContractClient] Veto extension of +${additionalDays}d for claim ${recoveryClaimId} requested, but HeirloomVault does not allow the backend to extend vetoes. Alert the owner instead.`
+    );
+    return { txHash: "", success: false };
   }
 
   /**
-   * Submits owner veto transaction to abort recovery on-chain.
+   * Not supported from the backend: vetoRecovery() must be signed by the owner's wallet (frontend).
    */
   async abortRecoveryOnChain(vaultId: string, ownerAddress: string): Promise<{ txHash: string; success: boolean }> {
-    logger.info(`[ContractClient] Submitting owner abort tx on-chain for vault ${vaultId} by ${ownerAddress}`);
-    const simulatedTxHash = `0x_mock_tx_owner_veto_${vaultId.substring(0, 8)}_${Date.now()}`;
-    return {
-      txHash: simulatedTxHash,
-      success: true,
-    };
+    logger.warn(
+      `[ContractClient] Abort for vault ${vaultId} by ${ownerAddress} requested, but vetoRecovery() must be signed by the owner wallet in the frontend.`
+    );
+    return { txHash: "", success: false };
   }
 }
