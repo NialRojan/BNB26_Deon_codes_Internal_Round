@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useVault } from '../../lib/vault'
 import { Button, Card, Page } from '../../components/ui'
+import { GuardianEscrowCard } from '../../components/EscrowPanels'
 
 type Vote = 'deceased' | 'incapacitated' | 'unsure'
 const options: { id: Vote; label: string }[] = [
@@ -46,6 +47,8 @@ export default function GuardianPortal() {
           <p className="mt-2 text-xs text-white/55">{chain.vault.currentSignatures} of {chain.vault.requiredSignatures} guardians have confirmed in this round.</p>
         )}
       </Card>
+
+      {live && <GuardianEscrowCard />}
 
       {!pending ? (
         <Card className="text-center">

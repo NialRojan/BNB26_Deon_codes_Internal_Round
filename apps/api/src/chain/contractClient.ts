@@ -81,6 +81,27 @@ export class ContractClient {
     };
   }
 
+  private vault(address?: string): Address {
+    return (address && isAddress(address) ? address : this.contractAddress) as Address;
+  }
+
+  async isExecuted(vault?: string): Promise<boolean> {
+    return this.client.readContract({ address: this.vault(vault), abi: heirloomVaultAbi, functionName: "isExecuted" });
+  }
+
+  async isGuardian(vault: string, who: string): Promise<boolean> {
+    return this.client.readContract({ address: this.vault(vault), abi: heirloomVaultAbi, functionName: "isGuardian", args: [who as Address] });
+  }
+
+  async isBeneficiary(vault: string, who: string): Promise<boolean> {
+    const bps = await this.client.readContract({ address: this.vault(vault), abi: heirloomVaultAbi, functionName: "beneficiaryBps", args: [who as Address] });
+    return Number(bps) > 0;
+  }
+
+  async ownerOf(vault: string): Promise<string> {
+    return this.client.readContract({ address: this.vault(vault), abi: heirloomVaultAbi, functionName: "owner" });
+  }
+
   /**
    * Not supported on-chain: the veto window length is fixed per vault and only the owner can change
    * timings. A high fraud score should instead alert the owner so they veto from their wallet.

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useVault } from '../../lib/vault'
 import { Button, Card, field, Locked, Page } from '../../components/ui'
 import { formatEther } from 'viem'
+import { HeirEscrowCard } from '../../components/EscrowPanels'
 
 export default function BeneficiaryPortal() {
   const v = useVault()
@@ -50,6 +51,8 @@ export default function BeneficiaryPortal() {
           )}
         </>
       )}
+
+      {live && <HeirEscrowCard />}
 
       <h2 className="text-xl font-bold">Recovery kit</h2>
       {!kitOpen ? (

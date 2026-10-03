@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    env: { DATABASE_URL: process.env.DATABASE_URL ?? "file:./dev.db" },
+    env: { DATABASE_URL: process.env.TEST_DATABASE_URL ?? "file:./test.db" },
     setupFiles: ["./tests/setup.ts"],
     fileParallelism: false,
     maxConcurrency: 1,

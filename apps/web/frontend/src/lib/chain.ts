@@ -117,6 +117,13 @@ export function onAccountsChanged(cb: (a: Address | null) => void) {
   return () => eth.removeListener?.('accountsChanged', handler)
 }
 
+/** Sign a plain-text message with the connected wallet (EIP-191). */
+export async function signMessage(message: string): Promise<{ account: Address; signature: Hash }> {
+  const account = await connectWallet()
+  const signature = await wallet().signMessage({ account, message })
+  return { account, signature }
+}
+
 type VaultWrite =
   | { functionName: 'pingHeartbeat' | 'vetoRecovery' | 'attestGuardian' | 'revokeAttestation' | 'executeRelease' }
   | { functionName: 'claim'; args: readonly [Address, Address] }

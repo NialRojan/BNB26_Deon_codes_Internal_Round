@@ -2,6 +2,7 @@ import { useState } from "react";
 import { type AssetKind, useVault } from "../../lib/vault";
 import { encryptLocal, SECRET_WORDS } from "../../lib/crypto";
 import { Button, Card, Field, field, Page } from "../../components/ui";
+import { SealSecretCard } from "../../components/EscrowPanels";
 
 const kinds: { id: AssetKind; title: string; blurb: string }[] = [
   {
@@ -237,11 +238,13 @@ export function AssetEditor() {
 }
 
 export default function AssetsPage() {
+  const { live } = useVault();
   return (
     <Page
       title="What you are protecting"
       intro="Each asset type is released in a different way. Pick one, add it, and it stays encrypted on your device."
     >
+      {live && <SealSecretCard />}
       <AssetEditor />
     </Page>
   );

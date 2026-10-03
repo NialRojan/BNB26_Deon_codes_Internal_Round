@@ -171,3 +171,55 @@ model AuditEvent {
   @@index([eventType])
   @@index([timestamp])
 }
+
+// ---------------------------------------------------------------------------
+// Key escrow for sealed secrets (Member 1 crypto + Member 2 contract gate).
+// The server only ever stores ciphertext: the secret is AES-encrypted in the
+// owner's browser, its key is Shamir-split, and each share is RSA-encrypted
+// to one guardian. Guardians re-encrypt their share to heirs only after the
+// HeirloomVault reports isExecuted() == true.
+// ---------------------------------------------------------------------------
+
+/// A guardian's or heir's public encryption key, proven by a wallet signature.
+model EscrowKey {
+  id           String   @id @default(uuid())
+  vaultAddress String
+  address      String   // wallet address, lowercase
+  role         String   // GUARDIAN | HEIR
+  publicKey    String   // JWK (RSA-OAEP)
+  signature    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([vaultAddress, address, role])
+}
+
+/// One sealed secret: AES-GCM ciphertext plus its Shamir threshold.
+model SealedSecret {
+  id           String         @id @default(uuid())
+  vaultAddress String
+  label        String
+  asset        String         // EncryptedAsset JSON (ciphertext only)
+  threshold    Int
+  createdAt    DateTime       @default(now())
+
+  shares       EscrowShare[]
+
+  @@index([vaultAddress])
+}
+
+/// A Shamir share encrypted to a guardian, or re-encrypted by that guardian to an heir.
+model EscrowShare {
+  id             String       @id @default(uuid())
+  secretId       String
+  guardian       String       // guardian address that holds/released this share, lowercase
+  recipient      String       // address the ciphertext is encrypted to, lowercase
+  kind           String       // HELD (to guardian) | RELEASED (guardian -> heir)
+  encryptedShare String
+  createdAt      DateTime     @default(now())
+
+  secret         SealedSecret @relation(fields: [secretId], references: [id], onDelete: Cascade)
+
+  @@unique([secretId, guardian, recipient, kind])
+  @@index([recipient, kind])
+}

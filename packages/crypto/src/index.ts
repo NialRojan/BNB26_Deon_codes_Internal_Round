@@ -18,3 +18,4 @@ export { packageLegalPacket, openLegalPacket } from "./payloads/legalPacket";
 export type { LegalPacketPayload } from "./payloads/legalPacket";
 export { rotateVaultKey } from "./lifecycle/rotateKeys";
 export { revokeShares } from "./lifecycle/revokeShares";
+export * as escrow from "./escrow";

@@ -17,3 +17,5 @@ dev.db-wal
 .DS_Store
 .kilo
 .freebuff
+test.db
+test.db-journal
