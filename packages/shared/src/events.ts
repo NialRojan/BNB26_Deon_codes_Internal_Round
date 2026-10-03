@@ -1,0 +1,51 @@
+/**
+ * Heirloom Protocol Audit Event Types
+ * Tamper-proof event definitions mirrored across smart contracts and backend audit trail.
+ */
+export enum AuditEventType {
+  // Vault lifecycle
+  VAULT_INITIALIZED = "VAULT_INITIALIZED",
+  POLICY_UPDATED = "POLICY_UPDATED",
+  OWNER_CREATED = "OWNER_CREATED",
+
+  // Heartbeat & Proof of Life
+  HEARTBEAT_RECEIVED = "HEARTBEAT_RECEIVED",
+  HEARTBEAT_MISSED = "HEARTBEAT_MISSED",
+  VAULT_ENTERED_WATCH = "VAULT_ENTERED_WATCH",
+  VAULT_RESTORED_ACTIVE = "VAULT_RESTORED_ACTIVE",
+
+  // Claims & Recovery
+  RECOVERY_CLAIM_SUBMITTED = "RECOVERY_CLAIM_SUBMITTED",
+  RECOVERY_INITIATED = "RECOVERY_INITIATED",
+  GUARDIAN_ATTESTATION_RECEIVED = "GUARDIAN_ATTESTATION_RECEIVED",
+  VETO_WINDOW_STARTED = "VETO_WINDOW_STARTED",
+  VETO_WINDOW_EXTENDED = "VETO_WINDOW_EXTENDED",
+  OWNER_VETO_RECEIVED = "OWNER_VETO_RECEIVED",
+  RECOVERY_CANCELLED = "RECOVERY_CANCELLED",
+
+  // Fraud & Anomaly Flags
+  RISK_EVENT_CREATED = "RISK_EVENT_CREATED",
+  ANOMALY_FLAG_TRIGGERED = "ANOMALY_FLAG_TRIGGERED",
+  COLLUSION_SUSPECTED = "COLLUSION_SUSPECTED",
+
+  // Document Ingestion
+  DOCUMENT_SUBMITTED = "DOCUMENT_SUBMITTED",
+  DOCUMENT_VERIFIED = "DOCUMENT_VERIFIED",
+
+  // Release
+  STAGE_RELEASED = "STAGE_RELEASED",
+  VAULT_FULLY_RELEASED = "VAULT_FULLY_RELEASED",
+  ALERT_SENT = "ALERT_SENT",
+}
+
+export interface HeirloomAuditEventPayload {
+  eventId: string;
+  eventType: AuditEventType;
+  actorId: string;
+  actorType: "OWNER" | "GUARDIAN" | "BENEFICIARY" | "SYSTEM" | "ORACLE" | "CONTRACT";
+  timestamp: string;
+  entityId: string;
+  entityType: string;
+  metadata?: Record<string, unknown>;
+  onChainTx?: string;
+}

@@ -1,0 +1,22 @@
+import { beforeAll, afterAll, beforeEach } from "vitest";
+import { prisma } from "../src/database/prisma.js";
+
+beforeAll(async () => {
+  await prisma.$connect();
+});
+
+beforeEach(async () => {
+  // Clean up tables in reverse foreign key order
+  await prisma.auditEvent.deleteMany({});
+  await prisma.riskEvent.deleteMany({});
+  await prisma.guardianAttestation.deleteMany({});
+  await prisma.alert.deleteMany({});
+  await prisma.recoveryAttempt.deleteMany({});
+  await prisma.heartbeatEvent.deleteMany({});
+  await prisma.ownerAvailability.deleteMany({});
+  await prisma.owner.deleteMany({});
+});
+
+afterAll(async () => {
+  await prisma.$disconnect();
+});
