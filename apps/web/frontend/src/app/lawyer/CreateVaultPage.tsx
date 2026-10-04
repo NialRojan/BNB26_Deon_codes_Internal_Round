@@ -365,7 +365,15 @@ export default function CreateVaultPage() {
                     <div>
                       <b className="text-sm text-[#17221b]">{heir.name}</b>{" "}
                       <span className="text-[#718077]">({heir.relationship})</span>
-                      <div className="text-[11px] text-[#869188]">{heir.contact} · {heir.wallet}</div>
+                      <div className="text-[11px] text-[#869188]">{heir.contact}</div>
+                      <input
+                        type="text"
+                        aria-label={`${heir.name} wallet address`}
+                        value={heir.wallet}
+                        onChange={(e) => setHeirs(heirs.map((h) => (h.id === heir.id ? { ...h, wallet: e.target.value } : h)))}
+                        placeholder="Heir wallet 0x..."
+                        className="mt-1 w-full min-w-[22rem] rounded border border-[#dce4dc] px-2 py-1 font-mono text-[11px]"
+                      />
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1 font-bold text-sm text-[#17221b]">
@@ -396,7 +404,7 @@ export default function CreateVaultPage() {
               {/* Add Heir Form */}
               <div className="rounded-xl border border-dashed border-[#cfdbcb] bg-[#fafbfa] p-4 text-xs">
                 <span className="font-bold text-[#17221b]">Add Another Heir</span>
-                <div className="mt-2 grid gap-3 sm:grid-cols-4">
+                <div className="mt-2 grid gap-3 sm:grid-cols-5">
                   <input
                     type="text"
                     placeholder="Name"
@@ -417,6 +425,13 @@ export default function CreateVaultPage() {
                     value={newHeirContact}
                     onChange={(e) => setNewHeirContact(e.target.value)}
                     className="rounded border border-[#dce4dc] px-2.5 py-1.5 text-xs"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Wallet 0x..."
+                    value={newHeirWallet}
+                    onChange={(e) => setNewHeirWallet(e.target.value)}
+                    className="rounded border border-[#dce4dc] px-2.5 py-1.5 font-mono text-xs"
                   />
                   <div className="flex gap-2">
                     <input
@@ -495,7 +510,15 @@ export default function CreateVaultPage() {
                           {g.role}
                         </span>
                       </div>
-                      <div className="mt-1 text-[11px] text-[#869188]">{g.contact} · {g.wallet}</div>
+                      <div className="mt-1 text-[11px] text-[#869188]">{g.contact}</div>
+                      <input
+                        type="text"
+                        aria-label={`${g.name} wallet address`}
+                        value={g.wallet}
+                        onChange={(e) => setGuardians(guardians.map((x) => (x.id === g.id ? { ...x, wallet: e.target.value } : x)))}
+                        placeholder="Guardian wallet 0x..."
+                        className="mt-1 w-full min-w-[22rem] rounded border border-[#dce4dc] px-2 py-1 font-mono text-[11px]"
+                      />
                     </div>
                     {guardians.length > 2 && (
                       <button
@@ -512,7 +535,7 @@ export default function CreateVaultPage() {
               {/* Add Guardian Form */}
               <div className="rounded-xl border border-dashed border-[#cfdbcb] bg-[#fafbfa] p-4 text-xs">
                 <span className="font-bold text-[#17221b]">Add Institutional or Trusted Guardian</span>
-                <div className="mt-2 grid gap-3 sm:grid-cols-4">
+                <div className="mt-2 grid gap-3 sm:grid-cols-5">
                   <input
                     type="text"
                     placeholder="Guardian Name"
@@ -533,6 +556,13 @@ export default function CreateVaultPage() {
                     value={newGContact}
                     onChange={(e) => setNewGContact(e.target.value)}
                     className="rounded border border-[#dce4dc] px-2.5 py-1.5 text-xs"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Wallet 0x..."
+                    value={newGWallet}
+                    onChange={(e) => setNewGWallet(e.target.value)}
+                    className="rounded border border-[#dce4dc] px-2.5 py-1.5 font-mono text-xs"
                   />
                   <button
                     type="button"
