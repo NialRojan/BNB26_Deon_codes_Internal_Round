@@ -250,7 +250,14 @@ export default function CreateVaultPage() {
 
             <div className="flex flex-wrap justify-center gap-3 pt-2">
               <button
-                onClick={() => navigate(`/client/onboarding?vaultId=${createdVaultId}&client=${encodeURIComponent(clientName)}`)}
+                onClick={() => {
+                  // Live: open the same tokenised link the client gets, so the page loads this vault's plan.
+                  if (live && onboardingLink) {
+                    const u = new URL(onboardingLink);
+                    navigate(u.pathname + u.search);
+                  } else if (live) navigate(`/client/onboarding?vault=${createdVaultAddress}`);
+                  else navigate(`/client/onboarding?vaultId=${createdVaultId}&client=${encodeURIComponent(clientName)}`);
+                }}
                 className="rounded-lg bg-[#17221b] px-5 py-2.5 text-xs font-bold text-white hover:bg-black"
               >
                 Open Client Onboarding Flow Now →

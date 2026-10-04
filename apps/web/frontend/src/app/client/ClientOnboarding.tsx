@@ -10,7 +10,10 @@ export default function ClientOnboarding() {
   // Live links carry ?token=…&vault=0x…; the local demo uses ?vaultId=…
   const token = searchParams.get("token");
   const vaultId = (searchParams.get("vault") || "").toLowerCase() || searchParams.get("vaultId") || "vault-1";
-  const targetVault = vaults.find((v) => v.id === vaultId) || vaults[0];
+  const linkedVault = vaults.find((v) => v.id === vaultId);
+  const targetVault = linkedVault || vaults[0];
+  // Live: wait for the linked vault's plan instead of showing (and confirming) whichever vault loaded first.
+  const waiting = !!live && !!searchParams.get("vault") && !linkedVault;
   useEffect(() => {
     if (live && token) live.openOnboarding(token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -23,6 +26,19 @@ export default function ClientOnboarding() {
     setRole("client");
     navigate("/client/assets");
   };
+
+  if (waiting)
+    return (
+      <div className="mx-auto max-w-3xl py-6">
+        <div className="rounded-2xl border border-[#e1e8e1] bg-white p-8 text-center shadow-sm">
+          <h2 className="text-xl font-bold text-[#17221b]">Loading your inheritance plan…</h2>
+          <p className="mt-1 text-sm text-[#718077]">
+            Reading vault {searchParams.get("vault")?.slice(0, 10)}… from the law firm's record and Sepolia.
+            {!token && " This link has no onboarding token. Ask the law firm for the full link, or connect a wallet named in this vault."}
+          </p>
+        </div>
+      </div>
+    );
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 py-6">
