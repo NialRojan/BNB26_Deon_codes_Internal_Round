@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../database/prisma.js";
-import { proofForRecord } from "../chain/auditAnchor.js";
+import { auditHealth, proofForRecord } from "../chain/auditAnchor.js";
+import { config } from "../config/env.js";
 
 const router = Router();
 
@@ -10,6 +11,19 @@ router.get("/anchors", async (_req, res, next) => {
     const batches = await prisma.auditAnchorBatch.findMany({ orderBy: { id: "desc" }, take: 50 });
     const pending = await prisma.auditEvent.count({ where: { anchorSeq: null } });
     res.json({ success: true, data: { batches, pendingRecords: pending } });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Health of the audit log: empty `issues` = nothing to show. The UI only surfaces real problems.
+router.get("/health", async (_req, res, next) => {
+  try {
+    const data = await auditHealth(prisma, {
+      anchoringEnabled: !!(config.ANCHOR_CONTRACT_ADDRESS && config.ANCHOR_PRIVATE_KEY),
+      intervalMs: config.ANCHOR_INTERVAL_MS,
+    });
+    res.json({ success: true, data });
   } catch (e) {
     next(e);
   }

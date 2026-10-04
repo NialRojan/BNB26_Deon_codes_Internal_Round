@@ -18,6 +18,15 @@ export default function ClientOnboarding() {
 
   const [confirmed, setConfirmed] = useState(false);
 
+  // A fresh tab (link opened directly) has no vault yet while the plan loads.
+  if (!targetVault || !targetVault.id) {
+    return (
+      <div className="mx-auto max-w-3xl py-16 text-center text-sm text-[#718077]">
+        {live?.error ? <span className="text-[#8a2f28]">{live.error}</span> : "Loading your inheritance plan…"}
+      </div>
+    );
+  }
+
   const handleConfirmAndContinue = () => {
     setActiveVaultId(targetVault.id);
     setRole("client");

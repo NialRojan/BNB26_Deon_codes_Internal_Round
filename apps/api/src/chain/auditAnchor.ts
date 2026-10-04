@@ -148,3 +148,42 @@ export async function proofForRecord(eventId: string, db: PrismaClient = default
     chainId: batch.chainId,
   };
 }
+
+export interface AuditHealthIssue {
+  severity: "critical" | "warning";
+  message: string;
+}
+
+/**
+ * Checks the audit log against what was anchored. Returns only real problems:
+ * - a batch whose records no longer hash to the anchored root (edited or deleted after anchoring)
+ * - anchoring that has fallen behind while records are waiting
+ */
+export async function auditHealth(
+  db: PrismaClient = defaultPrisma,
+  opts: { anchoringEnabled: boolean; intervalMs: number; now?: number }
+): Promise<{ ok: boolean; issues: AuditHealthIssue[]; pendingRecords: number; batches: number; lastAnchorAt: Date | null }> {
+  const issues: AuditHealthIssue[] = [];
+  const batches = await db.auditAnchorBatch.findMany({ orderBy: { id: "asc" } });
+  for (const b of batches) {
+    const members = await db.auditEvent.findMany({ where: { anchorBatchId: b.id }, orderBy: { anchorSeq: "asc" } });
+    if (members.length !== b.count) {
+      issues.push({ severity: "critical", message: `Audit batch ${b.id}: ${b.count - members.length} anchored record(s) are missing from the database.` });
+      continue;
+    }
+    const root = merkleRoot(members.map((m) => leafOf(recordHash(toAnchorable(m, m.anchorSeq!)))));
+    if (root.toLowerCase() !== b.root.toLowerCase()) {
+      issues.push({ severity: "critical", message: `Audit batch ${b.id}: records were changed after they were anchored on-chain (tx ${b.txHash.slice(0, 10)}…).` });
+    }
+  }
+  const pending = await db.auditEvent.count({ where: { anchorSeq: null } });
+  const last = batches.at(-1)?.createdAt ?? null;
+  if (opts.anchoringEnabled && pending > 0) {
+    const oldestPending = await db.auditEvent.findFirst({ where: { anchorSeq: null }, orderBy: { createdAt: "asc" } });
+    const waitingMs = (opts.now ?? Date.now()) - (oldestPending?.createdAt.getTime() ?? Date.now());
+    if (waitingMs > 3 * opts.intervalMs) {
+      issues.push({ severity: "warning", message: `Audit anchoring is behind: ${pending} record(s) waiting for ${Math.round(waitingMs / 60000)} min. Check the anchoring wallet's Sepolia ETH.` });
+    }
+  }
+  return { ok: issues.length === 0, issues, pendingRecords: pending, batches: batches.length, lastAnchorAt: last };
+}

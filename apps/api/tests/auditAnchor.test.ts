@@ -4,7 +4,7 @@ import type { Hex } from "viem";
 import { verifyProof } from "@heirloom/shared";
 import { createApp } from "../src/app.js";
 import { prisma } from "../src/database/prisma.js";
-import { AuditAnchorService, proofForRecord, type AnchorWriter } from "../src/chain/auditAnchor.js";
+import { AuditAnchorService, auditHealth, proofForRecord, type AnchorWriter } from "../src/chain/auditAnchor.js";
 import { AuditRepository } from "../src/repositories/auditRepository.js";
 
 /** In-memory stand-in for HeirloomAuditAnchor: same contiguity rule, records roots. */
@@ -79,5 +79,31 @@ describe("Audit log anchoring (HeirloomAuditAnchor)", () => {
     const anchors = await request(app).get("/api/v1/audit/anchors");
     expect(anchors.body.data.batches).toHaveLength(1);
     expect(anchors.body.data.pendingRecords).toBe(0);
+  });
+
+  it("health: silent when all is well, flags tampering, deletions and stalled anchoring", async () => {
+    const svc = new AuditAnchorService(fakeWriter(), prisma);
+    const a = await add("A");
+    const b = await add("B");
+    await svc.anchorPending();
+    let h = await auditHealth(prisma, { anchoringEnabled: true, intervalMs: 300000 });
+    expect(h.ok).toBe(true);
+    expect(h.issues).toHaveLength(0);
+
+    await prisma.auditEvent.update({ where: { id: a.id }, data: { actorId: "0xforged" } });
+    h = await auditHealth(prisma, { anchoringEnabled: true, intervalMs: 300000 });
+    expect(h.ok).toBe(false);
+    expect(h.issues[0]!.severity).toBe("critical");
+    expect(h.issues[0]!.message).toContain("changed after");
+
+    await prisma.auditEvent.delete({ where: { id: b.id } });
+    h = await auditHealth(prisma, { anchoringEnabled: true, intervalMs: 300000 });
+    expect(h.issues.some((i) => i.message.includes("missing"))).toBe(true);
+
+    await add("C"); // waiting, and pretend 20 minutes passed with no anchor
+    h = await auditHealth(prisma, { anchoringEnabled: true, intervalMs: 300000, now: Date.now() + 20 * 60000 });
+    expect(h.issues.some((i) => i.severity === "warning" && i.message.includes("behind"))).toBe(true);
+    h = await auditHealth(prisma, { anchoringEnabled: false, intervalMs: 300000, now: Date.now() + 20 * 60000 });
+    expect(h.issues.some((i) => i.message.includes("behind"))).toBe(false);
   });
 });

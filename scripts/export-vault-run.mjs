@@ -28,6 +28,8 @@ const NAMES = {
   "0x8bcfda887cbbc1f202766ef40a18a4d93f77a434": "Imported Account 5 (Guardian 3)",
   "0x66163667d14b859929697c89e591ff5d624bc71d": "Imported Account 4 (Heir A, 60%)",
   "0x806d387fa3fcf6093e4b0feadd9ffaf425deedda": "Imported Account 3 (Heir B, 40%)",
+  "0x41a2e975358cbcbd373d4b9f07982ebf954472f6": "Imported Account 2 (Law firm)",
+  "0x9ef3ced8870c6c6423fa2973ba32ad56a5bea181": "Heirloom relayer (gasless votes)",
   "0x0000000071727de22e5e9d8baf0edac6f37da032": "ERC-4337 EntryPoint",
 };
 const who = (a) => (a ? NAMES[a.toLowerCase()] ?? `${a.slice(0, 6)}…${a.slice(-4)}` : "");
@@ -67,7 +69,8 @@ const describe = (l) => {
       return `${target}: ${parts.join(", ")}`;
     }
     case "NftRuleUpdated": return `NFT ${who(a.collection)} #${a.tokenId} left to ${who(a.beneficiary)}`;
-    case "NftFallbackUpdated": return `Other NFTs go to ${who(a.beneficiary)}`;
+    case "NftFallbackUpdated": return /^0x0{40}$/.test(a.beneficiary) ? null : `Other NFTs go to ${who(a.beneficiary)}`;
+    case "Initialized": return null;
     case "NftClaimed": return `${who(a.heir)} received NFT ${who(a.collection)} #${a.tokenId}`;
     case "TimingsUpdated": return `Timers: ${a.inactivityThreshold}s inactivity, ${a.vetoGracePeriod}s veto window`;
     case "HeartbeatPinged": return `Owner proof of life (round ${a.epoch})`;
@@ -82,7 +85,7 @@ const describe = (l) => {
   }
 };
 
-const rows = logs.map((l) => ({
+const rows = logs.filter((l) => describe(l) !== null).map((l) => ({
   time: new Date(Number(blockTimes.get(l.blockNumber)) * 1000).toISOString(),
   block: Number(l.blockNumber),
   event: l.eventName,

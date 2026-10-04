@@ -332,9 +332,11 @@ export default function Shell() {
             </span>
             <StateChip state={vault.state} />
             <WalletButton />
+            {pathname.startsWith("/client") && (
             <Button onClick={vault.checkIn} disabled={!!vault.chain.busy}>
               Check in now <span aria-hidden>↗</span>
             </Button>
+            )}
           </div>
         </header>
 

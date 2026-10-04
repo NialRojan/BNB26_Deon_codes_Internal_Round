@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useB2B2C } from "../../lib/b2b2cStore";
+import AuditHealthBanner from "../../components/AuditHealthBanner";
 import type { VaultStatus, ClientVault } from "../../data/mockData";
 
 const statusColors: Record<VaultStatus, { bg: string; text: string; dot: string; border: string }> = {
@@ -13,7 +14,7 @@ const statusColors: Record<VaultStatus, { bg: string; text: string; dot: string;
 };
 
 export default function LawFirmDashboard() {
-  const { lawFirm, vaults, setActiveVaultId, auditLogs } = useB2B2C();
+  const { lawFirm, vaults, setActiveVaultId } = useB2B2C();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<string>("ALL");
   const [search, setSearch] = useState<string>("");
@@ -60,26 +61,6 @@ export default function LawFirmDashboard() {
           <p style={{ fontSize: "12px", color: "#c1cfc4", maxWidth: "560px", lineHeight: "1.5" }}>
             Logged in as <b>{lawFirm.loggedLawyer}</b> ({lawFirm.lawyerRole}). Managing institutional digital wills, guardian thresholds, and estate verification.
           </p>
-          <div className="welcome-actions" style={{ marginTop: "14px" }}>
-            <Link
-              to="/lawyer/create"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#a3e635] px-4 py-2 text-xs font-bold text-[#17221b] transition hover:brightness-95"
-            >
-              <span style={{ fontSize: "14px" }}>+</span> Create Client Vault
-            </Link>
-            <Link
-              to="/lawyer/verification"
-              className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-white/20"
-            >
-              Document Verification Desk {vaults.some((v) => v.deathCertificateStatus === "Pending") && <span className="ml-1 rounded-full bg-[#f59e0b] px-1.5 py-0.2 text-[10px] text-black font-bold">1</span>}
-            </Link>
-            <Link
-              to="/lawyer/execute"
-              className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-white/20"
-            >
-              Execute Digital Wills {readyCount > 0 && <span className="ml-1 rounded-full bg-[#0284c7] px-1.5 py-0.2 text-[10px] text-white font-bold">{readyCount}</span>}
-            </Link>
-          </div>
         </div>
         <div className="welcome-art" aria-hidden="true" style={{ opacity: 0.6 }}>
           <div className="halo" />
@@ -317,37 +298,8 @@ export default function LawFirmDashboard() {
         </table>
       </div>
 
-      {/* Recent Firm Activity Feed */}
-      <section className="rounded-xl border border-[#e1e8e1] bg-white p-5 shadow-sm">
-        <div className="section-heading mb-4">
-          <div>
-            <span className="section-kicker">AUDIT LOG · TAMPER EVIDENT</span>
-            <h3 className="text-base font-bold text-[#17221b]">Recent Fiduciary Actions</h3>
-          </div>
-          <span className="text-[10px] text-[#718077]">Law Firm & Guardian Audit Trail</span>
-        </div>
-        <div className="space-y-2.5">
-          {auditLogs.slice(0, 5).map((log) => (
-            <div
-              key={log.id}
-              className="flex items-center justify-between rounded-lg border border-[#f0f4ef] bg-[#fafbfa] px-3.5 py-2.5 text-xs"
-            >
-              <div className="flex items-center gap-2.5">
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    log.tone === "ok" ? "bg-[#34a853]" : log.tone === "warn" ? "bg-[#f59e0b]" : "bg-[#ef4444]"
-                  }`}
-                />
-                <span className="font-semibold text-[#17221b]">{log.text}</span>
-              </div>
-              <div className="flex items-center gap-3 text-[10px] text-[#758179]">
-                <span>By: <b>{log.actor}</b></span>
-                <time>{log.time}</time>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Audit log runs in the backend; only real problems are shown here */}
+      <AuditHealthBanner />
 
       {/* Client Vault Detailed Inspector Modal */}
       {selectedVault && (
