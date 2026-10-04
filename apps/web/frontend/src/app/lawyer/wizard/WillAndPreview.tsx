@@ -104,7 +104,7 @@ export function RequirementsChecklist() {
       <ul className="mt-3 space-y-2">
         {items.map(([t, d]) => (
           <li key={t}>
-            <b className="text-[#17221b]">☐ {t}</b>
+            <b className="text-[#17221b]">{t}</b>
             <div className="text-[11px] text-[#718077]">{d}</div>
           </li>
         ))}

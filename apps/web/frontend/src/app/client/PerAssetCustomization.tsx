@@ -121,7 +121,7 @@ export default function PerAssetCustomization() {
               onClick={handleDistributeToAll}
               className="rounded-lg border border-[#a3e635] bg-[#f8faf4] px-3 py-1.5 text-xs font-bold text-[#276332] hover:bg-[#eaf4df]"
             >
-              ☷ Distribute Equally to All Heirs
+              Distribute Equally to All Heirs
             </button>
           </div>
 

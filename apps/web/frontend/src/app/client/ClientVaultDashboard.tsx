@@ -38,7 +38,7 @@ export default function ClientVaultDashboard() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ef4444] text-white font-bold text-lg">
-                ⚠
+                !
               </span>
               <div>
                 <h4 className="font-bold text-[#b91c1c] text-sm uppercase tracking-wide">
@@ -89,19 +89,19 @@ export default function ClientVaultDashboard() {
               to="/client/seal"
               className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-white/20"
             >
-              🔒 Seal Secret
+              Seal Secret
             </Link>
             <button
               onClick={() => setShowEditModal(true)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-white/20"
             >
-              ⚙ Edit Rules
+              Edit Rules
             </button>
           </div>
         </div>
         <div className="welcome-art" aria-hidden="true" style={{ opacity: 0.5 }}>
           <div className="halo" />
-          <div className="shield" style={{ background: "#a3e635" }}>⌑</div>
+          <div className="shield" style={{ background: "#a3e635" }}></div>
         </div>
         <div className="welcome-foot" style={{ fontSize: "9px" }}>
           <span>Vault Contract: {activeVault.vaultAddress}</span>
@@ -173,15 +173,15 @@ export default function ClientVaultDashboard() {
           </div>
           <div className="space-y-2 text-xs">
             <div className="flex justify-between items-center">
-              <span>🪙 Crypto Assets:</span>
+              <span>Crypto Assets:</span>
               <b className="font-bold text-[#17221b]">{cryptoAssets.length} items</b>
             </div>
             <div className="flex justify-between items-center">
-              <span>🔐 Sealed Passwords & Shards:</span>
+              <span>Sealed Passwords & Shards:</span>
               <b className="font-bold text-[#17221b]">{accessAssets.length} items</b>
             </div>
             <div className="flex justify-between items-center">
-              <span>📑 Legal Probate Folios:</span>
+              <span>Legal Probate Folios:</span>
               <b className="font-bold text-[#17221b]">{legalAssets.length} items</b>
             </div>
           </div>
@@ -216,7 +216,7 @@ export default function ClientVaultDashboard() {
               to="/client/seal"
               className="rounded-lg bg-[#17221b] px-3 py-1.5 text-xs font-bold text-white hover:bg-black"
             >
-              🔒 Seal Secret
+              Seal Secret
             </Link>
           </div>
         </div>
@@ -349,7 +349,7 @@ export default function ClientVaultDashboard() {
           <div className="w-full max-w-md rounded-2xl border-2 border-[#ef4444] bg-white p-6 shadow-2xl">
             <div className="flex items-center gap-3 text-[#b91c1c]">
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fee2e2] text-xl font-bold">
-                ⚠
+                !
               </span>
               <div>
                 <h3 className="text-lg font-bold text-[#17221b]">Cancel Recovery?</h3>

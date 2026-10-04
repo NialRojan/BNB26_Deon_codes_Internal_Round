@@ -59,7 +59,6 @@ export default function DocumentVerification() {
       {/* Transparent Disclaimer Banner */}
       <div className="rounded-xl border border-[#dce4dc] bg-[#f8faf7] p-4 text-xs text-[#4b5563]">
         <div className="flex items-center gap-2 font-bold text-[#17221b]">
-          <span>⚖️</span>
           <span>Institutional Verification Standard</span>
         </div>
         <p className="mt-1 text-[11px] text-[#68756c] leading-relaxed">
@@ -97,7 +96,7 @@ export default function DocumentVerification() {
             <div className="rounded-xl border border-[#e1e8e1] p-4 text-xs space-y-3 bg-[#fafbfa]">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-sm text-[#17221b]">
-                  📄 {currentVault.deathCertificateUrl || "death_certificate_rahul_sharma.pdf"}
+                  {currentVault.deathCertificateUrl || "death_certificate_rahul_sharma.pdf"}
                 </span>
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${

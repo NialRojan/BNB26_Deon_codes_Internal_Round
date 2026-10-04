@@ -47,7 +47,7 @@ export default function StagedReleasePortal() {
       statusColor: isExecuted ? "bg-[#e0f2fe] text-[#0369a1]" : "bg-gray-100 text-gray-600",
       beneficiary: `Designated Heirs: ${vault.heirs.map((h) => h.name.split(" ")[0]).join(", ")}`,
       condition: "7-Day safety timelock following Stage 1 legal execution",
-      countdown: isExecuted ? "Unlocks in 4 days, 16 hours 🔒" : "Locked",
+      countdown: isExecuted ? "Unlocks in 4 days, 16 hours" : "Locked",
       items: [
         { title: "Password Manager Emergency Recovery", detail: "Encrypted browser-side key shards · Decrypted on heir devices" },
         { title: "Primary Email & 2FA Recovery Tokens", detail: "Emergency cloud keys for accounts management" },
@@ -61,7 +61,7 @@ export default function StagedReleasePortal() {
       statusColor: isExecuted ? "bg-[#fef3c7] text-[#92400e]" : "bg-gray-100 text-gray-600",
       beneficiary: "All Heirs per Custom Asset Rules",
       condition: "30-Day timelock + Milestone age triggers & installment schedules",
-      countdown: isExecuted ? "Unlocks in 27 days · Staged payouts active 🔒" : "Locked",
+      countdown: isExecuted ? "Unlocks in 27 days · Staged payouts active" : "Locked",
       items: [
         { title: "Ethereum Vault Balance (14.5 ETH)", detail: "Custom Split: Asha 70%, Arjun 30% (Age 21 milestone rule)" },
         { title: "Bitcoin Cold Storage (1.25 BTC)", detail: "Distributed equally to all heirs" },
@@ -177,7 +177,7 @@ export default function StagedReleasePortal() {
 
               <div className="flex items-center gap-2">
                 <span className={`rounded-full px-3 py-1 text-xs font-bold ${stg.statusColor}`}>
-                  {stg.status === "Released" ? "✓ Released" : stg.status === "Timelocked" ? "🔒 Timelocked" : "🔒 Gate Locked"}
+                  {stg.status === "Released" ? "✓ Released" : stg.status === "Timelocked" ? "Timelocked" : "Gate Locked"}
                 </span>
                 {stg.countdown && (
                   <span className="rounded bg-[#f8faf7] border border-[#e1e8e1] px-2.5 py-1 text-[11px] font-mono text-[#2b382e]">
@@ -216,7 +216,7 @@ export default function StagedReleasePortal() {
 
                   {stg.status === "Timelocked" && (
                     <span className="text-[11px] font-semibold text-[#68756c] bg-white border border-[#e1e8e1] px-2.5 py-1 rounded">
-                      🔒 Ciphertext Protected · Opens Post-Timelock
+                      Ciphertext Protected · Opens Post-Timelock
                     </span>
                   )}
                 </div>

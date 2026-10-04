@@ -220,7 +220,7 @@ export default function ExecuteWillPage() {
                 onClick={() => setShowConfirmModal(true)}
                 className="rounded-lg bg-[#0284c7] px-6 py-3 text-xs font-bold text-white shadow-md hover:bg-[#0369a1] transition whitespace-nowrap"
               >
-                Execute Digital Will ⚖
+                Execute Digital Will
               </button>
             </div>
           </div>

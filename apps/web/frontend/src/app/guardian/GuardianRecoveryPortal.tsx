@@ -77,7 +77,7 @@ export default function GuardianRecoveryPortal() {
         </div>
         <div className="welcome-art" aria-hidden="true" style={{ opacity: 0.5 }}>
           <div className="halo" />
-          <div className="shield" style={{ background: "#8fd3ff" }}>◉</div>
+          <div className="shield" style={{ background: "#8fd3ff" }}></div>
         </div>
       </section>
 
@@ -206,7 +206,6 @@ export default function GuardianRecoveryPortal() {
               <h4 className="font-bold text-[#17221b]">Submitted Evidence</h4>
               <div className="flex items-center justify-between rounded-lg bg-white p-2.5 border border-[#e1e8e1]">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">📄</span>
                   <div>
                     <div className="font-bold text-[#17221b]">
                       {selectedVault.deathCertificateUrl || "death_certificate_document.pdf"}
@@ -235,7 +234,7 @@ export default function GuardianRecoveryPortal() {
 
             {/* Gasless Vote Notice */}
             <div className="rounded-xl border border-[#b9d79e] bg-[#f8faf4] p-3.5 text-xs">
-              <div className="font-bold text-[#276332]">⚡ Gasless Guardian Vote Enabled</div>
+              <div className="font-bold text-[#276332]">Gasless Guardian Vote Enabled</div>
               <p className="mt-1 text-[11px] text-[#556358] leading-relaxed">
                 <b>You do not need ETH for this action.</b> Your approval will be cryptographically signed by your device and submitted on your behalf by Heirloom's fiduciary relayer.
               </p>
@@ -315,8 +314,8 @@ export default function GuardianRecoveryPortal() {
                 {voteTxState !== "idle" && (
                   <div className="rounded-lg border border-[#bae6fd] bg-[#f0f9ff] p-3 text-xs text-[#0369a1] space-y-1">
                     <div className="flex items-center gap-2 font-bold">
-                      {voteTxState === "signing" && <span>✍️ Signing Guardian Key Share EIP-712...</span>}
-                      {voteTxState === "submitting" && <span>🚀 Submitting Gasless Transaction to Relayer...</span>}
+                      {voteTxState === "signing" && <span>Signing Guardian Key Share EIP-712...</span>}
+                      {voteTxState === "submitting" && <span>Submitting Gasless Transaction to Relayer...</span>}
                     </div>
                     <p className="text-[11px]">
                       {voteTxState === "signing"

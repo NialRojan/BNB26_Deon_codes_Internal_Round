@@ -70,7 +70,6 @@ export default function SecretSealing() {
       {/* Prominent Privacy Statement */}
       <div className="rounded-xl border border-[#b9d79e] bg-[#f8faf4] p-4 text-xs">
         <div className="flex items-center gap-2 font-bold text-[#276332]">
-          <span className="text-base">🛡️</span>
           <span>Zero-Knowledge Browser Isolation</span>
         </div>
         <p className="mt-1 text-[11px] text-[#556358] leading-relaxed">
@@ -85,7 +84,7 @@ export default function SecretSealing() {
             ✓
           </div>
           <div>
-            <h3 className="text-xl font-bold text-[#17221b]">Secret Sealed Securely ✅</h3>
+            <h3 className="text-xl font-bold text-[#17221b]">Secret Sealed Securely</h3>
             <p className="mt-1 text-xs text-[#68756c] max-w-md mx-auto">
               Your secret was encrypted before leaving this device using AES-256-GCM and Shamir key shards.
               The plaintext has been permanently wiped from memory.
@@ -190,7 +189,7 @@ export default function SecretSealing() {
               disabled={isSealing || !label.trim() || !secretText.trim()}
               className="w-full rounded-lg bg-[#17221b] py-3 text-xs font-bold text-white shadow-sm hover:bg-black disabled:opacity-40"
             >
-              {isSealing ? "Encrypting with AES-256-GCM..." : "🔒 Seal Secret Locally"}
+              {isSealing ? "Encrypting with AES-256-GCM..." : "Seal Secret Locally"}
             </button>
             <p className="mt-2 text-center text-[10px] text-[#869188]">
               The plaintext is wiped from memory as soon as the ciphertext is generated.

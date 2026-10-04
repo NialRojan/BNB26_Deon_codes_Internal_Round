@@ -351,7 +351,7 @@ export default function CreateVaultPage() {
                     isPercentageValid ? "bg-[#eaf4df] text-[#276332]" : "bg-[#fef2f2] text-[#b91c1c]"
                   }`}
                 >
-                  Total = {totalPercentage}% {isPercentageValid ? "✓ Valid" : "⚠ Must equal 100%"}
+                  Total = {totalPercentage}% {isPercentageValid ? "✓ Valid" : "Must equal 100%"}
                 </div>
               </div>
 
@@ -702,7 +702,7 @@ export default function CreateVaultPage() {
 
               {!isPercentageValid && (
                 <div className="rounded-lg bg-[#fef2f2] p-3 text-xs text-[#b91c1c] font-semibold">
-                  ⚠ Heir allocation must total exactly 100% before you can create the vault. Current total: {totalPercentage}%.
+                  Heir allocation must total exactly 100% before you can create the vault. Current total: {totalPercentage}%.
                 </div>
               )}
             </div>

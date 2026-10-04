@@ -102,7 +102,6 @@ export function FirmEmptyState() {
   const step = !live.firmSignedIn ? 'signin' : !live.firm ? 'register' : 'empty'
   return (
     <div className="mx-auto max-w-2xl rounded-2xl border border-[#e1e8e1] bg-white p-8 text-center shadow-sm">
-      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#eef6e4] text-xl">⚖</div>
       {step === 'signin' && (
         <>
           <h2 className="text-xl font-bold text-[#17221b]">Sign in to see your clients</h2>

@@ -66,7 +66,6 @@ export default function AssetOnboarding() {
         <div className="rounded-xl border border-[#b9d79e] bg-[#f8faf4] p-4 text-xs">
           <div className="flex items-center justify-between">
             <span className="text-[10px] uppercase font-bold text-[#276332]">Class 1 · Stage 3</span>
-            <span className="text-base">🪙</span>
           </div>
           <h4 className="mt-1 font-bold text-[#17221b]">Crypto & Wallets</h4>
           <p className="mt-1 text-[11px] text-[#68756c]">
@@ -80,7 +79,6 @@ export default function AssetOnboarding() {
         <div className="rounded-xl border border-[#bae6fd] bg-[#f0f9ff] p-4 text-xs">
           <div className="flex items-center justify-between">
             <span className="text-[10px] uppercase font-bold text-[#0369a1]">Class 2 · Stage 2</span>
-            <span className="text-base">🔐</span>
           </div>
           <h4 className="mt-1 font-bold text-[#17221b]">Access Kit & Passwords</h4>
           <p className="mt-1 text-[11px] text-[#68756c]">
@@ -94,7 +92,6 @@ export default function AssetOnboarding() {
         <div className="rounded-xl border border-[#fde3a7] bg-[#fffbf0] p-4 text-xs">
           <div className="flex items-center justify-between">
             <span className="text-[10px] uppercase font-bold text-[#9a6700]">Class 3 · Stage 1</span>
-            <span className="text-base">📑</span>
           </div>
           <h4 className="mt-1 font-bold text-[#17221b]">Legal & Bank Dossier</h4>
           <p className="mt-1 text-[11px] text-[#68756c]">

@@ -100,7 +100,7 @@ export default function RecoveryTimelinePage() {
           : vault.status === "EXECUTED"
           ? "Digital will executed by Mehta & Partners"
           : "Locked until prior gates complete",
-      timeInfo: vault.status === "READY FOR EXECUTION" ? "Ready Now ⚖" : undefined,
+      timeInfo: vault.status === "READY FOR EXECUTION" ? "Ready Now" : undefined,
     },
     {
       id: "s6",
@@ -159,7 +159,7 @@ export default function RecoveryTimelinePage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#ef4444] text-white font-bold text-xl">
-                ⚠
+                !
               </span>
               <div>
                 <h4 className="font-bold text-[#b91c1c] text-sm uppercase tracking-wider">
@@ -303,7 +303,7 @@ export default function RecoveryTimelinePage() {
           <div className="w-full max-w-md rounded-2xl border-2 border-[#ef4444] bg-white p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-[#b91c1c]">
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fee2e2] text-xl font-bold">
-                ⚠
+                !
               </span>
               <div>
                 <h3 className="text-lg font-bold text-[#17221b]">Cancel Recovery?</h3>

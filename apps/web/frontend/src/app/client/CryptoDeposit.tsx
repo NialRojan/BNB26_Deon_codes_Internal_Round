@@ -71,7 +71,6 @@ export default function CryptoDeposit() {
         <span className="text-[10px] uppercase font-bold text-[#3d8b50]">Direct Custodial Flow</span>
         <div className="mt-3 flex items-center justify-between text-center text-xs">
           <div className="flex-1 rounded-lg bg-white p-3 border border-[#e1e8e1]">
-            <span className="text-base">💼</span>
             <div className="mt-1 font-bold text-[#17221b]">Your Personal Wallet</div>
             <div className="text-[10px] text-[#718077] truncate">{activeVault.clientWallet.slice(0, 12)}...</div>
           </div>
@@ -83,7 +82,6 @@ export default function CryptoDeposit() {
           </div>
 
           <div className="flex-1 rounded-lg bg-white p-3 border border-[#e1e8e1]">
-            <span className="text-base">🏛️</span>
             <div className="mt-1 font-bold text-[#17221b]">Heirloom Vault</div>
             <div className="text-[10px] text-[#718077] truncate">{activeVault.vaultAddress.slice(0, 12)}...</div>
           </div>
@@ -152,8 +150,8 @@ export default function CryptoDeposit() {
             }`}
           >
             <div className="flex items-center gap-2 font-bold text-sm">
-              {txState === "waiting" && <span>⏳ Waiting for Wallet Confirmation...</span>}
-              {txState === "pending" && <span>⛓️ Transaction Pending on Blockchain...</span>}
+              {txState === "waiting" && <span>Waiting for Wallet Confirmation...</span>}
+              {txState === "pending" && <span>Transaction Pending on Blockchain...</span>}
               {txState === "confirmed" && <span>✓ Deposit Confirmed into Vault!</span>}
             </div>
 

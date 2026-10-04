@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useVault } from "../lib/vault";
 import { useB2B2C, type Role } from "../lib/b2b2cStore";
 import VetoBanner from "./VetoBanner";
@@ -12,57 +12,57 @@ const roleInfo: Record<Role, { name: string; subtitle: string; icon: string; eye
   lawyer: {
     name: "Mehta & Partners",
     subtitle: "Law Firm Fiduciary",
-    icon: "⚖",
+    icon: "L",
     eyebrow: "HEIRLOOM / LAW FIRM FIDUCIARY WORKSPACE",
   },
   client: {
     name: "Rahul Sharma",
     subtitle: "Vault Owner (Sole Authority)",
-    icon: "✦",
+    icon: "C",
     eyebrow: "HEIRLOOM / CLIENT PRIVATE VAULT",
   },
   guardian: {
     name: "Vikram Sharma",
     subtitle: "Designated Key Guardian",
-    icon: "◉",
+    icon: "G",
     eyebrow: "HEIRLOOM / GUARDIAN PORTAL",
   },
   heir: {
     name: "Arjun Sharma",
     subtitle: "Legal Heir / Executor",
-    icon: "♡",
+    icon: "H",
     eyebrow: "HEIRLOOM / HEIR & EXECUTOR PORTAL",
   },
 };
 
 const lawyerLinks = [
-  ["/lawyer", "Fiduciary Overview", "◫"],
-  ["/lawyer/create", "Create Client Vault", "+"],
-  ["/lawyer/verification", "Document Verification", "📑"],
-  ["/lawyer/execute", "Execute Digital Will", "⚖"],
-  ["/recovery", "Recovery Status Timeline", "◷"],
+  ["/lawyer", "Fiduciary Overview", ""],
+  ["/lawyer/create", "Create Client Vault", ""],
+  ["/lawyer/verification", "Document Verification", ""],
+  ["/lawyer/execute", "Execute Digital Will", ""],
+  ["/recovery", "Recovery Status Timeline", ""],
 ];
 
 const clientLinks = [
-  ["/client/vault", "My Vault Dashboard", "◫"],
-  ["/client/onboarding", "Onboarding Review", "◇"],
-  ["/client/assets", "Asset Classification", "▤"],
-  ["/client/deposit", "Deposit Crypto", "🪙"],
-  ["/client/seal", "Seal Secret Browser-Side", "🔒"],
-  ["/client/customize", "Per-Asset Customization", "♧"],
-  ["/recovery", "Recovery & Veto Status", "⚠"],
+  ["/client/vault", "My Vault Dashboard", ""],
+  ["/client/onboarding", "Onboarding Review", ""],
+  ["/client/assets", "Asset Classification", ""],
+  ["/client/deposit", "Deposit Crypto", ""],
+  ["/client/seal", "Seal Secret Browser-Side", ""],
+  ["/client/customize", "Per-Asset Customization", ""],
+  ["/recovery", "Recovery & Veto Status", ""],
 ];
 
 const guardianLinks = [
-  ["/guardian", "Pending Attestations", "◉"],
-  ["/recovery", "Recovery State Machine", "◷"],
+  ["/guardian", "Pending Attestations", ""],
+  ["/recovery", "Recovery State Machine", ""],
 ];
 
 const heirLinks = [
-  ["/heir/releases", "Staged Releases", "▣"],
-  ["/executor", "Executor Legal Packet", "📑"],
-  ["/heir", "Claim Beneficiary Assets", "♡"],
-  ["/lawyer/verification", "Upload Death Certificate", "↑"],
+  ["/heir/releases", "Staged Releases", ""],
+  ["/executor", "Executor Legal Packet", ""],
+  ["/heir", "Claim Beneficiary Assets", ""],
+  ["/lawyer/verification", "Upload Death Certificate", ""],
 ];
 
 const titles: Record<string, string> = {
@@ -94,6 +94,12 @@ export default function Shell() {
   const vault = useVault();
   const { role, setRole, activeVault, live, vaults } = useB2B2C();
   // A live law firm with no client vaults sees an empty state on lawyer pages (the wizard stays available).
+  // The page decides the role: opening /guardian (by link or URL) acts as a guardian, etc.
+  useEffect(() => {
+    const byPath: [string, Role][] = [["/lawyer", "lawyer"], ["/client", "client"], ["/guardian", "guardian"], ["/heir", "heir"], ["/executor", "heir"]];
+    const match = byPath.find(([prefix]) => pathname.startsWith(prefix));
+    if (match && match[1] !== role) setRole(match[1]);
+  }, [pathname, role, setRole]);
   const firmHasNoClients = !!live && role === "lawyer" && vaults.length === 0 && pathname.startsWith("/lawyer") && pathname !== "/lawyer/create";
   const [open, setOpen] = useState(false);
   const [switchOpen, setSwitchOpen] = useState(false);
@@ -187,7 +193,7 @@ export default function Shell() {
                   onClick={() => setOpen(false)}
                   className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
                 >
-                  <span className="nav-icon">{icon}</span>
+                  {icon && <span className="nav-icon">{icon}</span>}
                   {label}
                 </NavLink>
               ))}
@@ -204,7 +210,7 @@ export default function Shell() {
                   onClick={() => setOpen(false)}
                   className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
                 >
-                  <span className="nav-icon">{icon}</span>
+                  {icon && <span className="nav-icon">{icon}</span>}
                   {label}
                 </NavLink>
               ))}
@@ -221,7 +227,7 @@ export default function Shell() {
                   onClick={() => setOpen(false)}
                   className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
                 >
-                  <span className="nav-icon">{icon}</span>
+                  {icon && <span className="nav-icon">{icon}</span>}
                   {label}
                 </NavLink>
               ))}
@@ -238,7 +244,7 @@ export default function Shell() {
                   onClick={() => setOpen(false)}
                   className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
                 >
-                  <span className="nav-icon">{icon}</span>
+                  {icon && <span className="nav-icon">{icon}</span>}
                   {label}
                 </NavLink>
               ))}
@@ -257,7 +263,7 @@ export default function Shell() {
                   }`
                 }
               >
-                Lawyer ⚖
+                Lawyer
               </NavLink>
               <NavLink
                 to="/client/vault"
@@ -267,7 +273,7 @@ export default function Shell() {
                   }`
                 }
               >
-                Client ✦
+                Client
               </NavLink>
               <NavLink
                 to="/guardian"
@@ -277,7 +283,7 @@ export default function Shell() {
                   }`
                 }
               >
-                Guardian ◉
+                Guardian
               </NavLink>
               <NavLink
                 to="/heir/releases"
@@ -287,7 +293,7 @@ export default function Shell() {
                   }`
                 }
               >
-                Heir ♡
+                Heir
               </NavLink>
             </div>
           </section>
@@ -296,7 +302,7 @@ export default function Shell() {
         {/* Sidebar Footer */}
         <div className="sidebar-bottom">
           <NavLink to="/recovery" className="nav-link">
-            <span className="nav-icon">⚠</span>
+            
             Emergency Veto & Status
           </NavLink>
           <div className="user-profile">

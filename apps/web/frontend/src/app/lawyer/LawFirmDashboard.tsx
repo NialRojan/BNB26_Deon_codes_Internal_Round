@@ -83,7 +83,7 @@ export default function LawFirmDashboard() {
         </div>
         <div className="welcome-art" aria-hidden="true" style={{ opacity: 0.6 }}>
           <div className="halo" />
-          <div className="shield" style={{ background: "#a3e635" }}>⚖</div>
+          <div className="shield" style={{ background: "#a3e635" }}></div>
         </div>
         <div className="welcome-foot" style={{ fontSize: "9px" }}>
           <span>Institutional Fiduciary Custody Active · Bar Reg: {lawFirm.licenseNumber}</span>
@@ -96,7 +96,6 @@ export default function LawFirmDashboard() {
         <article className="metric-card">
           <div className="metric-head">
             <span>Total Clients</span>
-            <span className="metric-icon">👥</span>
           </div>
           <strong className="metric-value">{totalClients}</strong>
           <span className="metric-note">Under institutional care</span>
@@ -112,7 +111,6 @@ export default function LawFirmDashboard() {
         <article className="metric-card">
           <div className="metric-head">
             <span>Watch / Recovery</span>
-            <span className="metric-icon">⚠</span>
           </div>
           <strong className="metric-value" style={{ color: "#b43b17" }}>{watchCount + recoveryPendingCount + vetoWindowCount}</strong>
           <span className="metric-note">{recoveryPendingCount} pending, {vetoWindowCount} in veto</span>
@@ -120,7 +118,6 @@ export default function LawFirmDashboard() {
         <article className="metric-card">
           <div className="metric-head">
             <span>Ready for Execution</span>
-            <span className="metric-icon">⚖</span>
           </div>
           <strong className="metric-value" style={{ color: "#0369a1" }}>{readyCount}</strong>
           <span className="metric-note">{executedCount} wills completed</span>
@@ -266,7 +263,7 @@ export default function LawFirmDashboard() {
                   <td className="px-3 py-3.5">
                     <div className="text-[11px] text-[#2b382e]">{vault.lastCheckIn}</div>
                     <span className="text-[10px] text-[#869188]">
-                      {vault.status === "ACTIVE" ? "✓ Up to date" : "⚠ Follow-up"}
+                      {vault.status === "ACTIVE" ? "✓ Up to date" : "Follow-up"}
                     </span>
                   </td>
 
