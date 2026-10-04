@@ -10,6 +10,7 @@ import {
   explainError,
   readHasAttested,
   readVault,
+  readVaultsByCreator,
   sendEth,
   signAttestation,
   writeVault,
@@ -178,7 +179,8 @@ export function useLiveB2B(chain: Chain, role: Role, enabled: boolean) {
   const addresses = useMemo(() => {
     const set = new Map<string, Address>()
     for (const r of records) set.set(lc(r.vaultAddress), r.vaultAddress)
-    if (role !== 'lawyer' || records.length === 0 || linkRecords.length) set.set(lc(chain.vaultAddress), chain.vaultAddress)
+    // Clients/guardians/heirs also see the vault the app points at (e.g. opened by link). A law firm sees only its own clients.
+    if (role !== 'lawyer' || linkRecords.length) set.set(lc(chain.vaultAddress), chain.vaultAddress)
     return [...set.values()]
   }, [records, chain.vaultAddress, role, linkRecords.length])
 
@@ -257,6 +259,40 @@ export function useLiveB2B(chain: Chain, role: Role, enabled: boolean) {
         return `Firm "${name}" registered`
       }),
     )
+  // ---- vaults this firm wallet created on-chain that are not in its client list yet
+  const [importable, setImportable] = useState<Address[]>([])
+  useEffect(() => {
+    if (!enabled || role !== 'lawyer' || !firm || !chain.account) return setImportable([])
+    let cancelled = false
+    readVaultsByCreator(chain.account as Address)
+      .then((all) => !cancelled && setImportable(all.filter((a) => !records.some((r) => lc(r.vaultAddress) === lc(a)))))
+      .catch(() => !cancelled && setImportable([]))
+    return () => {
+      cancelled = true
+    }
+  }, [enabled, role, firm, chain.account, records])
+
+  /** Register vaults this firm created earlier (e.g. by script) using their on-chain settings. Names can be edited later. */
+  const importVaults = (addrs: Address[] = importable) =>
+    quiet(
+      run('Import vaults', async () => {
+        for (const a of addrs) {
+          const v = await readVault(a)
+          await registerClientVault({
+            vaultAddress: a,
+            clientName: `Client ${short(v.owner)}`,
+            clientEmail: '',
+            clientWallet: v.owner,
+            heirs: v.beneficiaries.map((b) => ({ name: short(b.wallet), wallet: b.wallet, percentage: b.bps / 100, relationship: 'Beneficiary' })),
+            guardians: v.guardians.map((g) => ({ name: short(g), wallet: g, role: lc(g) === lc(chain.account ?? '') ? 'Law firm' : 'Guardian' })),
+            executorLabel: firm?.name ?? 'Law firm',
+            assets: [],
+          })
+        }
+        return `Imported ${addrs.length} existing vault${addrs.length === 1 ? '' : 's'} into ${firm?.name ?? 'the firm'}'s client list`
+      }),
+    )
+
   /** Client opened the onboarding link: load the plan by its one-time token and focus that vault. */
   const openOnboarding = async (token: string) => {
     try {
@@ -430,6 +466,8 @@ export function useLiveB2B(chain: Chain, role: Role, enabled: boolean) {
       signOutFirm,
       onboardingLinkFor,
       openOnboarding,
+      importable,
+      importVaults,
       depositEth,
       busy,
       error,

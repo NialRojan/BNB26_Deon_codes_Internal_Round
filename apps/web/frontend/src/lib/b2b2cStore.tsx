@@ -40,6 +40,13 @@ export interface B2B2CContextType {
 
 const B2B2CContext = createContext<B2B2CContextType | null>(null);
 
+/** Placeholder while a live list is empty (lawyer pages are replaced by an empty state then). */
+const EMPTY_VAULT: ClientVault = {
+  id: "", clientName: "", clientEmail: "", clientWallet: "", vaultAddress: "", status: "ACTIVE", heirs: [], guardians: [],
+  requiredApprovals: 0, executor: "", inactivityDays: 0, vetoHours: 0, lastCheckIn: "", recoveryStatusDetail: "",
+  deathCertificateStatus: "None", guardianAttestationsCount: 0, assets: [],
+};
+
 export function useB2B2C() {
   const ctx = useContext(B2B2CContext);
   if (!ctx) throw new Error("useB2B2C must be used inside B2B2CProvider");
@@ -274,7 +281,8 @@ export function B2B2CProvider({ children }: { children: ReactNode }) {
     live: null,
   };
   // On Sepolia the same screens are driven by the contracts + backend; Local demo keeps the mock data.
-  const value: B2B2CContextType = isLive && liveStore.activeVault ? { ...liveStore, role, setRole, activeVault: liveStore.activeVault } : mockValue;
+  // A law firm with no clients yet has an empty list; lawyer pages show an empty state instead of mock data.
+  const value: B2B2CContextType = isLive ? { ...liveStore, role, setRole, activeVault: liveStore.activeVault ?? EMPTY_VAULT } : mockValue;
 
   return <B2B2CContext.Provider value={value}>{children}</B2B2CContext.Provider>;
 }

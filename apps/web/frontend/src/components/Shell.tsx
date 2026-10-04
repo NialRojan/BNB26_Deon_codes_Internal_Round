@@ -5,7 +5,7 @@ import { useB2B2C, type Role } from "../lib/b2b2cStore";
 import VetoBanner from "./VetoBanner";
 import DemoBar from "./DemoBar";
 import { TxToast, WalletButton } from "./ChainStatus";
-import { B2BToast, FirmSessionBar } from "./FirmSession";
+import { B2BToast, FirmEmptyState, FirmSessionBar } from "./FirmSession";
 import { Button, StateChip } from "./ui";
 
 const roleInfo: Record<Role, { name: string; subtitle: string; icon: string; eyebrow: string }> = {
@@ -92,7 +92,9 @@ export default function Shell() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const vault = useVault();
-  const { role, setRole, activeVault } = useB2B2C();
+  const { role, setRole, activeVault, live, vaults } = useB2B2C();
+  // A live law firm with no client vaults sees an empty state on lawyer pages (the wizard stays available).
+  const firmHasNoClients = !!live && role === "lawyer" && vaults.length === 0 && pathname.startsWith("/lawyer") && pathname !== "/lawyer/create";
   const [open, setOpen] = useState(false);
   const [switchOpen, setSwitchOpen] = useState(false);
 
@@ -332,7 +334,7 @@ export default function Shell() {
 
         <main className="page-canvas">
           <FirmSessionBar />
-          <Outlet />
+          {firmHasNoClients ? <FirmEmptyState /> : <Outlet />}
         </main>
 
         <footer className="app-footer">

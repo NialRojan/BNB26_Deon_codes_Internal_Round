@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useB2B2C } from '../lib/b2b2cStore'
 import { useVault } from '../lib/vault'
 
@@ -47,6 +47,7 @@ export function FirmSessionBar() {
     )
 
   return (
+    <>
     <div className={`${box} flex flex-wrap items-center justify-between gap-2`}>
       <span>
         Signed in as <b>{live.firm.name}</b> · {live.firm.lawyerName} · firm wallet {live.firm.wallet.slice(0, 6)}…{live.firm.wallet.slice(-4)}
@@ -55,6 +56,8 @@ export function FirmSessionBar() {
         Sign out
       </button>
     </div>
+    <ImportBanner />
+    </>
   )
 }
 
@@ -72,4 +75,58 @@ export function B2BToast() {
       </div>
     )
   return null
+}
+
+/** Vaults this firm wallet created on-chain (e.g. by script) that are not in its client list yet. */
+export function ImportBanner() {
+  const { live, role } = useB2B2C()
+  const { pathname } = useLocation()
+  if (!live || role !== 'lawyer' || !live.firm || !live.importable.length || !pathname.startsWith('/lawyer')) return null
+  return (
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#f1d9a8] bg-[#fffaf0] px-4 py-3 text-sm text-[#5a4a1f]">
+      <span>
+        The factory records <b>{live.importable.length}</b> vault{live.importable.length === 1 ? '' : 's'} created by this firm wallet that {live.importable.length === 1 ? 'is' : 'are'} not in your client list (
+        {live.importable.map((a) => `${a.slice(0, 6)}…${a.slice(-4)}`).join(', ')}).
+      </span>
+      <button className="rounded-lg bg-[#17221b] px-3 py-1.5 text-xs font-bold text-white hover:bg-black disabled:opacity-40" disabled={!!live.busy} onClick={() => live.importVaults()}>
+        {live.busy === 'Import vaults' ? 'Importing… sign in MetaMask' : 'Import into client list'}
+      </button>
+    </div>
+  )
+}
+
+/** Shown instead of a lawyer page when the (live) firm has no client vaults yet. */
+export function FirmEmptyState() {
+  const { live } = useB2B2C()
+  if (!live) return null
+  const step = !live.firmSignedIn ? 'signin' : !live.firm ? 'register' : 'empty'
+  return (
+    <div className="mx-auto max-w-2xl rounded-2xl border border-[#e1e8e1] bg-white p-8 text-center shadow-sm">
+      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#eef6e4] text-xl">⚖</div>
+      {step === 'signin' && (
+        <>
+          <h2 className="text-xl font-bold text-[#17221b]">Sign in to see your clients</h2>
+          <p className="mt-1 text-sm text-[#718077]">Your client list is tied to the law firm's wallet. Use "Sign in with firm wallet" above (one free signature).</p>
+        </>
+      )}
+      {step === 'register' && (
+        <>
+          <h2 className="text-xl font-bold text-[#17221b]">Register your firm</h2>
+          <p className="mt-1 text-sm text-[#718077]">Fill in the firm details above once. Then create your first client vault.</p>
+        </>
+      )}
+      {step === 'empty' && (
+        <>
+          <h2 className="text-xl font-bold text-[#17221b]">No clients yet</h2>
+          <p className="mt-1 text-sm text-[#718077]">
+            Each client vault you create appears here with its live status, guardian votes and timers.
+            {live.importable.length > 0 && ' You can also import vaults this wallet already created (banner above).'}
+          </p>
+          <Link to="/lawyer/create" className="mt-4 inline-block rounded-lg bg-[#a3e635] px-5 py-2.5 text-sm font-bold text-[#17221b] hover:brightness-95">
+            + Create your first client vault
+          </Link>
+        </>
+      )}
+    </div>
+  )
 }

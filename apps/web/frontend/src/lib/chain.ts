@@ -277,6 +277,11 @@ export async function predictVaultAddress(cfg: VaultConfig, salt: bigint): Promi
   return publicClient.readContract({ address: FACTORY_ADDRESS, abi: heirloomVaultFactoryAbi, functionName: 'getAddress', args: [cfg, salt] }) as Promise<Address>
 }
 
+/** Every vault the factory records as created by `creator` (e.g. a law firm's wallet). */
+export async function readVaultsByCreator(creator: Address): Promise<Address[]> {
+  return [...((await publicClient.readContract({ address: FACTORY_ADDRESS, abi: heirloomVaultFactoryAbi, functionName: 'getVaultsByCreator', args: [creator] })) as readonly Address[])]
+}
+
 /** Send ETH from the connected wallet (e.g. the client funding their vault). */
 export async function sendEth(to: Address, wei: bigint): Promise<Hash> {
   const account = await connectWallet()
