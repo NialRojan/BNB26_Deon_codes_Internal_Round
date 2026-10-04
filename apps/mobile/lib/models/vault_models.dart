@@ -1,4 +1,4 @@
-enum UserRole { owner, guardian, beneficiary, executor }
+enum UserRole { owner, lawyer, guardian, beneficiary, executor }
 
 enum VaultStatus {
   active,
@@ -13,7 +13,8 @@ enum AssetCategory { crypto, access, financial }
 
 extension UserRoleLabel on UserRole {
   String get label => switch (this) {
-    UserRole.owner => 'Owner',
+    UserRole.owner => 'Client',
+    UserRole.lawyer => 'Law firm',
     UserRole.guardian => 'Guardian',
     UserRole.beneficiary => 'Beneficiary',
     UserRole.executor => 'Executor',
@@ -34,8 +35,8 @@ extension VaultStatusLabel on VaultStatus {
 extension AssetCategoryLabel on AssetCategory {
   String get label => switch (this) {
     AssetCategory.crypto => 'Crypto wallet',
-    AssetCategory.access => 'Passwords & 2FA',
-    AssetCategory.financial => 'Financial account',
+    AssetCategory.access => 'Access kit & password shards',
+    AssetCategory.financial => 'Legal / asset information',
   };
 }
 
@@ -47,6 +48,7 @@ class VaultAsset {
     required this.detail,
     required this.recipient,
     this.configured = true,
+    this.customRule,
   });
   final String id;
   String name;
@@ -54,6 +56,7 @@ class VaultAsset {
   String detail;
   String recipient;
   bool configured;
+  String? customRule;
 }
 
 class VaultPerson {

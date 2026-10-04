@@ -249,7 +249,7 @@ class GuardianRequestDetailScreen extends StatelessWidget {
       children: [
         const DemoBanner(),
         const SizedBox(height: 14),
-        const SurfaceCard(
+        SurfaceCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -392,6 +392,7 @@ class BeneficiaryHomeScreen extends StatelessWidget {
   final ValueChanged<int> onTab;
   @override
   Widget build(BuildContext context) {
+    final store = StoreScope.of(context);
     final title = isExecutor ? 'Executor overview' : 'Your recovery overview';
     return SafeArea(
       child: ListView(
@@ -431,13 +432,17 @@ class BeneficiaryHomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const StatusBadge(
-                  label: 'Access not authorized',
-                  tone: BadgeTone.warning,
+                StatusBadge(
+                  label: store.releaseStage == 0
+                      ? 'Access not authorized'
+                      : 'Stage ${store.releaseStage} available in preview',
+                  tone: store.releaseStage == 0 ? BadgeTone.warning : BadgeTone.good,
                 ),
                 const SizedBox(height: 13),
-                const Text(
-                  'Nothing has been released.',
+                Text(
+                  store.releaseStage == 0
+                      ? 'Nothing has been released.'
+                      : 'Stage ${store.releaseStage} is open.',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -445,8 +450,10 @@ class BeneficiaryHomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 7),
-                const Text(
-                  'This local preview has no backend authorization. Protected materials and documents remain unavailable.',
+                Text(
+                  store.releaseStage == 0
+                      ? 'Protected materials stay locked until the fiduciary checks and owner safety delay are complete.'
+                      : 'This is a local workflow preview. No protected secret or document is stored in the app.',
                   style: TextStyle(
                     color: Color(0xFFBBC8BD),
                     fontSize: 11,
@@ -460,10 +467,10 @@ class BeneficiaryHomeScreen extends StatelessWidget {
           const SectionTitle('Recovery stages'),
           const SizedBox(height: 8),
           for (final stage in [
-            ('01', 'Legal claim packet', 'Executor · claim guidance'),
-            ('02', 'Scoped access kit', 'Assigned beneficiaries only'),
-            ('03', 'Crypto recovery', 'Additional checks and delays'),
-          ])
+            ('01', 'Legal claim packet', 'Executor · immediate after execution'),
+            ('02', 'Scoped access kit', 'Assigned beneficiaries · 7-day safety delay'),
+            ('03', 'Crypto recovery', 'Custom rules · 30-day delay and milestones'),
+          ].indexed)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: SurfaceCard(
@@ -471,7 +478,7 @@ class BeneficiaryHomeScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     Text(
-                      stage.$1,
+                      stage.$2.$1,
                       style: const TextStyle(
                         color: AppColors.muted,
                         fontWeight: FontWeight.w700,
@@ -483,14 +490,14 @@ class BeneficiaryHomeScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            stage.$2,
+                            stage.$2.$2,
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 12,
                             ),
                           ),
                           Text(
-                            stage.$3,
+                            stage.$2.$3,
                             style: const TextStyle(
                               color: AppColors.muted,
                               fontSize: 10,
@@ -499,7 +506,18 @@ class BeneficiaryHomeScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const StatusBadge(label: 'Locked'),
+                    StatusBadge(
+                      label: store.releaseStage >= stage.$1 + 1
+                          ? 'Released'
+                          : store.releaseStage > 0
+                          ? 'Timelocked'
+                          : 'Locked',
+                      tone: store.releaseStage >= stage.$1 + 1
+                          ? BadgeTone.good
+                          : store.releaseStage > 0
+                          ? BadgeTone.warning
+                          : BadgeTone.neutral,
+                    ),
                   ],
                 ),
               ),
@@ -522,25 +540,29 @@ class BeneficiaryHomeScreen extends StatelessWidget {
 class RecoveryMaterialsScreen extends StatelessWidget {
   const RecoveryMaterialsScreen({super.key});
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) {
+    final store = StoreScope.of(context);
+    return Scaffold(
     appBar: AppBar(title: const Text('Recovery access')),
     body: ListView(
       padding: const EdgeInsets.all(18),
       children: [
         const DemoBanner(),
         const SizedBox(height: 14),
-        const SurfaceCard(
+        SurfaceCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Access conditions',
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
-              SizedBox(height: 7),
+              const SizedBox(height: 7),
               Text(
-                'The demo has no authorized release state. No recovery material is displayed or available to reveal.',
-                style: TextStyle(
+                store.releaseStage >= 2
+                    ? 'The access-kit stage is marked available in the local preview. No password or recovery code is stored in this app.'
+                    : 'The access kit remains locked until Stage 1 execution and the safety time-lock complete.',
+                style: const TextStyle(
                   color: AppColors.muted,
                   fontSize: 11,
                   height: 1.5,
@@ -550,25 +572,28 @@ class RecoveryMaterialsScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        const _LockedMaterialCard(
+        _LockedMaterialCard(
           icon: Icons.password_outlined,
           title: 'Scoped access kit',
-          detail: 'Locked · no password or backup codes shown',
+          detail: store.releaseStage >= 2 ? 'Stage 2 available · contents not stored here' : 'Stage 2 · time-locked',
+          released: store.releaseStage >= 2,
         ),
         const SizedBox(height: 8),
-        const _LockedMaterialCard(
+        _LockedMaterialCard(
           icon: Icons.currency_bitcoin,
           title: 'Crypto recovery',
-          detail: 'Locked · no seed phrase or key material shown',
+          detail: store.releaseStage >= 3 ? 'Stage 3 available · no key material shown' : 'Stage 3 · additional delay and milestone checks',
+          released: store.releaseStage >= 3,
         ),
         const SizedBox(height: 12),
         const Text(
-          'A future secure reveal flow requires backend authorization, step-up authentication, and secure key handling.',
+          'A secure reveal still requires verified backend authorization, step-up authentication, and secure key handling.',
           style: TextStyle(color: AppColors.muted, fontSize: 10, height: 1.5),
         ),
       ],
     ),
   );
+  }
 }
 
 class _LockedMaterialCard extends StatelessWidget {
@@ -576,10 +601,12 @@ class _LockedMaterialCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.detail,
+    this.released = false,
   });
   final IconData icon;
   final String title;
   final String detail;
+  final bool released;
   @override
   Widget build(BuildContext context) => SurfaceCard(
     child: Row(
@@ -604,7 +631,7 @@ class _LockedMaterialCard extends StatelessWidget {
             ],
           ),
         ),
-        const StatusBadge(label: 'Locked'),
+        StatusBadge(label: released ? 'Available' : 'Locked', tone: released ? BadgeTone.good : BadgeTone.neutral),
       ],
     ),
   );
@@ -621,6 +648,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   final Set<int> _checked = {};
   @override
   Widget build(BuildContext context) {
+    final store = StoreScope.of(context);
     final steps = widget.isExecutor
         ? [
             'Review the available account inventory',
@@ -646,13 +674,27 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           ),
           const DemoBanner(),
           const SizedBox(height: 12),
-          const SurfaceCard(
+          if (widget.isExecutor && store.releaseStage < 1)
+            const SurfaceCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  StatusBadge(label: 'Legal packet locked', tone: BadgeTone.warning),
+                  SizedBox(height: 9),
+                  Text('The legal packet opens after fiduciary execution at Stage 1.', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                  SizedBox(height: 5),
+                  Text('The client website gates this packet on guardian review, document verification, and the owner veto period.', style: TextStyle(color: AppColors.muted, fontSize: 10, height: 1.45)),
+                ],
+              ),
+            )
+          else ...[
+          SurfaceCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 StatusBadge(
-                  label: 'No documents released',
-                  tone: BadgeTone.warning,
+                  label: widget.isExecutor ? 'Stage 1 · Legal packet available in preview' : 'No protected document content stored',
+                  tone: widget.isExecutor ? BadgeTone.good : BadgeTone.warning,
                 ),
                 SizedBox(height: 9),
                 Text(
@@ -701,6 +743,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 ),
               ),
             ),
+          ],
           if (!widget.isExecutor) ...[
             const SizedBox(height: 12),
             const SectionTitle('Recovery materials'),
