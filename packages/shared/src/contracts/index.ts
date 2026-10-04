@@ -4,6 +4,7 @@
  */
 export { heirloomVaultAbi, heirloomVaultFactoryAbi, heirloomAuditAnchorAbi } from "./abi.js";
 export { escrowMessages, digest, type EscrowRole } from "./escrow.js";
+export { b2bMessages, attestTypedData } from "./b2b.js";
 
 export const SEPOLIA_CHAIN_ID = 11155111;
 

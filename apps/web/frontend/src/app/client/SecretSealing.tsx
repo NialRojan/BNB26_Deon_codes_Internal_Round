@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useB2B2C } from "../../lib/b2b2cStore";
+import { sealSecret as sealInEscrow } from "../../lib/escrow";
 
 type SecretType = "Password / Access" | "Recovery Code" | "Seed Phrase";
 
 export default function SecretSealing() {
-  const { activeVault, sealSecret } = useB2B2C();
+  const { activeVault, sealSecret, live } = useB2B2C();
+  const [sealError, setSealError] = useState<string | null>(null);
   const [type, setType] = useState<SecretType>("Password / Access");
   const [label, setLabel] = useState("");
   const [secretText, setSecretText] = useState("");
@@ -18,7 +20,20 @@ export default function SecretSealing() {
     if (!label.trim() || !secretText.trim()) return;
 
     setIsSealing(true);
-    // Simulate browser-side AES-256-GCM encryption
+    setSealError(null);
+    if (live) {
+      // Real: AES-256-GCM in this browser, key split k-of-n to the vault's guardians, ciphertext only to the server.
+      sealInEscrow(label.trim(), secretText, activeVault.requiredApprovals)
+        .then(() => sealSecret(activeVault.id, label.trim(), "Access Kit", `${type} · guardian-held key shares (${activeVault.requiredApprovals} of ${activeVault.guardians.length})`))
+        .then(() => {
+          setSecretText("");
+          setSealedDone(true);
+        })
+        .catch((err: Error) => setSealError(err.message))
+        .finally(() => setIsSealing(false));
+      return;
+    }
+    // Local demo: simulated encryption
     setTimeout(() => {
       sealSecret(
         activeVault.id,
@@ -181,6 +196,7 @@ export default function SecretSealing() {
               The plaintext is wiped from memory as soon as the ciphertext is generated.
             </p>
           </div>
+                  {sealError && <p role="alert" className="text-xs text-[#8a2f28]">{sealError}</p>}
         </form>
       )}
     </div>

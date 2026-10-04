@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
+import { useVault } from "./vault";
+import { useLiveB2B, type LiveExtras } from "./b2b2cLive";
 import {
   INITIAL_CLIENT_VAULTS,
   LAW_FIRM,
@@ -18,9 +20,9 @@ export interface B2B2CContextType {
   activeVaultId: string;
   setActiveVaultId: (id: string) => void;
   activeVault: ClientVault;
-  createVault: (newVault: Omit<ClientVault, "id">) => ClientVault;
+  createVault: (newVault: Omit<ClientVault, "id">) => Promise<ClientVault>;
   updateVaultStatus: (vaultId: string, status: VaultStatus) => void;
-  submitDeathCertificate: (vaultId: string, docName: string, uploadedBy: string) => void;
+  submitDeathCertificate: (vaultId: string, docName: string, uploadedBy: string, fileHash?: string) => void;
   verifyDeathCertificate: (vaultId: string, approve: boolean) => void;
   submitGuardianAttestation: (vaultId: string, guardianId: string, approve: boolean) => void;
   cancelRecovery: (vaultId: string) => void;
@@ -31,6 +33,8 @@ export interface B2B2CContextType {
   recordDeposit: (vaultId: string, asset: string, amount: string, txHash: string) => void;
   auditLogs: { id: string; time: string; text: string; actor: string; tone: "ok" | "warn" | "risk" }[];
   addAuditLog: (text: string, actor: string, tone?: "ok" | "warn" | "risk") => void;
+  /** null in Local demo mode; real law-firm session, onboarding links, deposits etc. on Sepolia. */
+  live: LiveExtras | null;
 }
 
 const B2B2CContext = createContext<B2B2CContextType | null>(null);
@@ -61,7 +65,7 @@ export function B2B2CProvider({ children }: { children: ReactNode }) {
 
   const activeVault = vaults.find((v) => v.id === activeVaultId) || vaults[0];
 
-  const createVault = (data: Omit<ClientVault, "id">): ClientVault => {
+  const createVault = async (data: Omit<ClientVault, "id">): Promise<ClientVault> => {
     const id = `vault-${Date.now()}`;
     const newVault: ClientVault = { ...data, id };
     setVaults((prev) => [newVault, ...prev]);
@@ -242,32 +246,34 @@ export function B2B2CProvider({ children }: { children: ReactNode }) {
     addAuditLog(`Client deposited ${amount} ${asset} into vault (${txHash.slice(0, 10)}...)`, "Client Wallet", "ok");
   };
 
-  return (
-    <B2B2CContext.Provider
-      value={{
-        role,
-        setRole,
-        lawFirm: LAW_FIRM,
-        vaults,
-        activeVaultId,
-        setActiveVaultId,
-        activeVault,
-        createVault,
-        updateVaultStatus,
-        submitDeathCertificate,
-        verifyDeathCertificate,
-        submitGuardianAttestation,
-        cancelRecovery,
-        executeDigitalWill,
-        addClientAsset,
-        updateAssetRule,
-        sealSecret,
-        recordDeposit,
-        auditLogs,
-        addAuditLog,
-      }}
-    >
-      {children}
-    </B2B2CContext.Provider>
-  );
+  const { live: isLive, chain } = useVault();
+  const liveStore = useLiveB2B(chain, role, isLive);
+
+  const mockValue: B2B2CContextType = {
+    role,
+    setRole,
+    lawFirm: LAW_FIRM,
+    vaults,
+    activeVaultId,
+    setActiveVaultId,
+    activeVault,
+    createVault,
+    updateVaultStatus,
+    submitDeathCertificate,
+    verifyDeathCertificate,
+    submitGuardianAttestation,
+    cancelRecovery,
+    executeDigitalWill,
+    addClientAsset,
+    updateAssetRule,
+    sealSecret,
+    recordDeposit,
+    auditLogs,
+    addAuditLog,
+    live: null,
+  };
+  // On Sepolia the same screens are driven by the contracts + backend; Local demo keeps the mock data.
+  const value: B2B2CContextType = isLive && liveStore.activeVault ? { ...liveStore, role, setRole, activeVault: liveStore.activeVault } : mockValue;
+
+  return <B2B2CContext.Provider value={value}>{children}</B2B2CContext.Provider>;
 }

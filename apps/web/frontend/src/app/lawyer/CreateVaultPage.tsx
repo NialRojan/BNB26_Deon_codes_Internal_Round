@@ -13,7 +13,9 @@ const STEPS = [
 ];
 
 export default function CreateVaultPage() {
-  const { createVault, lawFirm } = useB2B2C();
+  const { createVault, lawFirm, live } = useB2B2C();
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
 
@@ -111,14 +113,19 @@ export default function CreateVaultPage() {
     }
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
+    setCreateError(null);
+    // Local demo: a placeholder address. On Sepolia the real address comes back from the factory.
     const randomHex = Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
-    const vaultAddress = `0x${randomHex}`;
-    const v = createVault({
+    const placeholder = `0x${randomHex}`;
+    setCreating(true);
+    let v;
+    try {
+      v = await createVault({
       clientName,
       clientEmail,
       clientWallet,
-      vaultAddress,
+      vaultAddress: placeholder,
       status: "ACTIVE",
       heirs,
       guardians,
@@ -136,12 +143,20 @@ export default function CreateVaultPage() {
         { id: "a-init-3", category: "Legal / Asset Information", name: "Primary Demat & Banking Accounts", detail: "Client legal dossier", institution: "Designated Banks" },
       ],
     });
-    setCreatedVaultAddress(vaultAddress);
+    } catch (e) {
+      setCreateError(live?.lastError() ?? (e as Error).message);
+      return;
+    } finally {
+      setCreating(false);
+    }
+    setCreatedVaultAddress(v.vaultAddress);
     setCreatedVaultId(v.id);
   };
 
   const onboardingLink = createdVaultId
-    ? `${window.location.origin}/client/onboarding?vaultId=${createdVaultId}&client=${encodeURIComponent(clientName)}`
+    ? live
+      ? live.onboardingLinkFor(createdVaultId)
+      : `${window.location.origin}/client/onboarding?vaultId=${createdVaultId}&client=${encodeURIComponent(clientName)}`
     : "";
 
   const handleCopyOnboardingLink = () => {
@@ -691,14 +706,22 @@ export default function CreateVaultPage() {
             ) : (
               <button
                 type="button"
-                disabled={!isPercentageValid}
+                disabled={!isPercentageValid || creating}
                 onClick={handleCreate}
                 className="rounded-lg bg-[#a3e635] px-6 py-2.5 text-xs font-bold text-[#17221b] shadow-sm hover:brightness-95 disabled:opacity-40"
               >
-                Create Client Vault
+                {creating ? (live ? "Creating on Sepolia… confirm in MetaMask" : "Creating…") : live ? "Create Client Vault on Sepolia" : "Create Client Vault"}
               </button>
             )}
           </div>
+          {createError && (
+            <p role="alert" className="mt-3 rounded-lg bg-[#fff0ed] px-3 py-2 text-xs text-[#8a2f28]">
+              {createError}
+            </p>
+          )}
+          {live && !live.firm && (
+            <p className="mt-3 text-xs text-[#718077]">Sign in and register the law firm (top of the page) before creating vaults.</p>
+          )}
         </div>
       )}
     </div>

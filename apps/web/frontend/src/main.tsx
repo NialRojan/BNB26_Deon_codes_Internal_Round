@@ -9,11 +9,11 @@ import './index.css'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <B2B2CProvider>
-        <VaultProvider>
+      <VaultProvider>
+        <B2B2CProvider>
           <App />
-        </VaultProvider>
-      </B2B2CProvider>
+        </B2B2CProvider>
+      </VaultProvider>
     </BrowserRouter>
   </React.StrictMode>,
 )

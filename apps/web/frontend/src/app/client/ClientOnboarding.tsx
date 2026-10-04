@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useB2B2C } from "../../lib/b2b2cStore";
 
 export default function ClientOnboarding() {
-  const { vaults, setRole, setActiveVaultId } = useB2B2C();
+  const { vaults, setRole, setActiveVaultId, live } = useB2B2C();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const vaultId = searchParams.get("vaultId") || "vault-1";
+  // Live links carry ?token=…&vault=0x…; the local demo uses ?vaultId=…
+  const token = searchParams.get("token");
+  const vaultId = (searchParams.get("vault") || "").toLowerCase() || searchParams.get("vaultId") || "vault-1";
   const targetVault = vaults.find((v) => v.id === vaultId) || vaults[0];
+  useEffect(() => {
+    if (live && token) live.openOnboarding(token);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, !!live]);
 
   const [confirmed, setConfirmed] = useState(false);
 

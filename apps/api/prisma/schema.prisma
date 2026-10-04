@@ -245,3 +245,49 @@ model EscrowShare {
   @@unique([secretId, guardian, recipient, kind])
   @@index([recipient, kind])
 }
+
+// ---------------------------------------------------------------------------
+// B2B2C: law firms and the client vaults they set up. On-chain truth (state,
+// votes, balances) always comes from the vault; these rows hold the human
+// metadata the contract deliberately does not store (names, contacts, notes).
+// ---------------------------------------------------------------------------
+
+model Firm {
+  id         String       @id @default(uuid())
+  wallet     String       @unique // lowercase; signs in by wallet signature
+  name       String
+  lawyerName String
+  license    String?
+  createdAt  DateTime     @default(now())
+
+  clients    FirmClient[]
+}
+
+model FirmClient {
+  id              String    @id @default(uuid())
+  firmId          String
+  vaultAddress    String    @unique // lowercase
+  creationTx      String?
+  clientName      String
+  clientEmail     String?
+  clientWallet    String    // lowercase
+  heirs           String    // JSON: [{name, contact, wallet, percentage, relationship}]
+  guardians       String    // JSON: [{name, contact, wallet, role}]
+  executorLabel   String?
+  assets          String    @default("[]") // JSON: AssetRecord[] (descriptions only, never secrets)
+  onboardingToken String    @unique
+  certStatus      String    @default("None") // None | Pending | Verified | Rejected
+  certFileName    String?
+  certHash        String?
+  certUploadedBy  String?
+  certUploadedAt  DateTime?
+  certReviewedBy  String?
+  certReviewedAt  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  firm            Firm      @relation(fields: [firmId], references: [id])
+
+  @@index([firmId])
+  @@index([clientWallet])
+}

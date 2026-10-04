@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { useB2B2C } from "../../lib/b2b2cStore";
 
 export default function ExecuteWillPage() {
-  const { vaults, executeDigitalWill, lawFirm, setActiveVaultId } = useB2B2C();
+  const { vaults, executeDigitalWill, lawFirm, setActiveVaultId, live } = useB2B2C();
+  const [execError, setExecError] = useState<string | null>(null);
 
   // Find a vault ready for execution or default to vault-5
   const readyVaults = vaults.filter((v) => v.status === "READY FOR EXECUTION");
@@ -16,8 +17,18 @@ export default function ExecuteWillPage() {
 
   const targetVault = vaults.find((v) => v.id === selectedVaultId) || vaults[0];
 
-  const handleTriggerExecution = () => {
+  const handleTriggerExecution = async () => {
     setIsExecuting(true);
+    if (live) {
+      // Real: executeRelease() (if needed) then distribute(ETH) to every heir, signed by the firm wallet.
+      setExecError(null);
+      const ok = await (executeDigitalWill(targetVault.id) as unknown as Promise<boolean>);
+      setIsExecuting(false);
+      setShowConfirmModal(false);
+      if (ok) setExecutedSuccess(true);
+      else setExecError(live.lastError());
+      return;
+    }
     setTimeout(() => {
       executeDigitalWill(targetVault.id);
       setIsExecuting(false);
@@ -44,6 +55,7 @@ export default function ExecuteWillPage() {
           ← Lawyer Overview
         </Link>
       </div>
+      {execError && <p role="alert" className="rounded-lg bg-[#fff0ed] px-3 py-2 text-xs text-[#8a2f28]">{execError}</p>}
 
       {executedSuccess ? (
         /* Executed Success Card */

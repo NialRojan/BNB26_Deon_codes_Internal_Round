@@ -12,6 +12,8 @@ import {
   connectWallet,
   switchAccount,
   currentAccount,
+  getActiveVault,
+  setActiveVault,
   ETH,
   explainError,
   onAccountsChanged,
@@ -109,6 +111,9 @@ export interface Vault {
 }
 
 export interface Chain {
+  /** Vault currently shown/acted on (law-firm and client screens can switch it). */
+  vaultAddress: Address;
+  selectVault: (address: Address) => void;
   vault: OnChainVault | null;
   account: Address | null;
   role: { owner: boolean; guardian: boolean; heir: boolean; executor: boolean };
@@ -247,9 +252,11 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [lastTx, setLastTx] = useState<string | null>(null);
   const prevState = useRef<number | null>(null);
+  const [vaultAddress, setVaultAddress] = useState<Address>(getActiveVault());
 
   const refresh = useCallback(async () => {
     try {
+      if (getActiveVault() !== vaultAddress) return; // stale callback after a switch
       const v = await readVault();
       setCv(v);
       setEthPlan(await readPlan(ETH));
@@ -275,7 +282,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       setError(explainError(e));
     }
-  }, [account, log]);
+  }, [account, log, vaultAddress]);
 
   useEffect(() => {
     currentAccount().then(setAccount).catch(() => {});
@@ -312,6 +319,14 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   };
 
   const chain: Chain = {
+    vaultAddress,
+    selectVault: (address: Address) => {
+      if (address.toLowerCase() === vaultAddress.toLowerCase()) return;
+      setActiveVault(address);
+      prevState.current = null;
+      setCv(null);
+      setVaultAddress(address);
+    },
     vault: cv,
     account,
     role,

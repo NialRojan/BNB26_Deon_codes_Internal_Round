@@ -5,7 +5,8 @@ import { useB2B2C } from "../../lib/b2b2cStore";
 type TxState = "idle" | "waiting" | "pending" | "confirmed";
 
 export default function CryptoDeposit() {
-  const { activeVault, recordDeposit } = useB2B2C();
+  const { activeVault, recordDeposit, live } = useB2B2C();
+  const [depositError, setDepositError] = useState<string | null>(null);
   const [asset, setAsset] = useState<string>("ETH");
   const [amount, setAmount] = useState<string>("2.5");
   const [txState, setTxState] = useState<TxState>("idle");
@@ -18,7 +19,22 @@ export default function CryptoDeposit() {
     BTC: "1.42 BTC",
   };
 
-  const handleDeposit = () => {
+  const handleDeposit = async () => {
+    if (live) {
+      // Real transfer from the client's wallet into their vault (ETH only in the live demo).
+      if (asset !== "ETH") return setDepositError("On Sepolia this demo deposits ETH only. Choose ETH.");
+      setDepositError(null);
+      setTxState("waiting");
+      try {
+        const hash = await live.depositEth(activeVault.id, amount);
+        setTxHash(hash);
+        setTxState("confirmed");
+      } catch (e) {
+        setTxState("idle");
+        setDepositError(live.lastError() ?? (e as Error).message);
+      }
+      return;
+    }
     setTxState("waiting");
     setTimeout(() => {
       setTxState("pending");
@@ -186,6 +202,7 @@ export default function CryptoDeposit() {
                 : `Deposit ${amount} ${asset} from Personal Wallet`}
             </button>
           )}
+          {depositError && <p role="alert" className="mt-2 text-xs text-[#8a2f28]">{depositError}</p>}
         </div>
       </div>
     </div>

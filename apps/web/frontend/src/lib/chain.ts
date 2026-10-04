@@ -9,7 +9,7 @@ import {
   type Hash,
 } from 'viem'
 import { sepolia } from 'viem/chains'
-import { deployments, heirloomVaultAbi } from '@heirloom/contracts'
+import { attestTypedData, deployments, heirloomVaultAbi, heirloomVaultFactoryAbi } from '@heirloom/contracts'
 
 declare global {
   interface Window {
@@ -18,6 +18,15 @@ declare global {
 }
 
 export const VAULT_ADDRESS = (import.meta.env.VITE_VAULT_ADDRESS || deployments.sepolia.demoVault) as Address
+export const FACTORY_ADDRESS = (import.meta.env.VITE_FACTORY_ADDRESS || deployments.sepolia.factory) as Address
+
+// The vault the app is currently looking at. Defaults to VITE_VAULT_ADDRESS; the law-firm/client
+// screens switch it when a different client vault is selected.
+let activeVault: Address = VAULT_ADDRESS
+export const getActiveVault = () => activeVault
+export function setActiveVault(a: Address) {
+  activeVault = a
+}
 export const ETH = '0x0000000000000000000000000000000000000000' as Address
 export const EXPLORER = 'https://sepolia.etherscan.io'
 
@@ -60,6 +69,14 @@ export interface Allocation {
   interval: number // seconds
 }
 
+type RawAllocation = { beneficiary: Address; bps: number; unlockAt: bigint; installments: number; interval: number }
+type RawVaultInfo = {
+  state: number; owner: Address; executor: Address; assetMapCID: string; lastHeartbeat: bigint; inactivityThreshold: bigint
+  vetoGracePeriod: bigint; watchStartsAt: bigint; vetoEndTime: bigint; executedAt: bigint; epoch: bigint; currentSignatures: bigint
+  requiredSignatures: bigint; guardians: readonly Address[]; defaultAllocations: readonly RawAllocation[]; plannedTokens: readonly Address[]
+  nftRuleCount: bigint; nftFallback: Address; ethBalance: bigint
+}
+
 const toAllocation = (a: { beneficiary: Address; bps: number; unlockAt: bigint; installments: number; interval: number }): Allocation => ({
   wallet: a.beneficiary,
   bps: Number(a.bps),
@@ -68,8 +85,14 @@ const toAllocation = (a: { beneficiary: Address; bps: number; unlockAt: bigint; 
   interval: Number(a.interval),
 })
 
-export async function readVault(address: Address = VAULT_ADDRESS): Promise<OnChainVault> {
-  const i = await (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'getVaultInfo' })
+/** Typed wrapper around readContract for the (large) vault ABI; avoids TS "excessively deep" errors. */
+function readVaultFn<T>(address: Address, functionName: string, args: readonly unknown[] = []): Promise<T> {
+  const read = publicClient.readContract as unknown as (p: { address: Address; abi: typeof heirloomVaultAbi; functionName: string; args: readonly unknown[] }) => Promise<T>
+  return read({ address, abi: heirloomVaultAbi, functionName, args })
+}
+
+export async function readVault(address: Address = getActiveVault()): Promise<OnChainVault> {
+  const i = await readVaultFn<RawVaultInfo>(address, 'getVaultInfo')
   return {
     address,
     state: i.state as OnChainState,
@@ -93,33 +116,33 @@ export async function readVault(address: Address = VAULT_ADDRESS): Promise<OnCha
   }
 }
 
-export async function readHasAttested(guardian: Address, address: Address = VAULT_ADDRESS) {
-  return (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'hasAttestedThisRound', args: [guardian] })
+export async function readHasAttested(guardian: Address, address: Address = getActiveVault()) {
+  return readVaultFn<boolean>(address, 'hasAttestedThisRound', [guardian])
 }
 
-export async function readClaimable(heir: Address, token: Address = ETH, address: Address = VAULT_ADDRESS) {
-  return (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'claimable', args: [token, heir] })
+export async function readClaimable(heir: Address, token: Address = ETH, address: Address = getActiveVault()) {
+  return readVaultFn<bigint>(address, 'claimable', [token, heir])
 }
 
 /** True if `who` is named in any split or NFT rule of the vault. */
-export async function readIsBeneficiary(who: Address, address: Address = VAULT_ADDRESS) {
-  return (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'isBeneficiary', args: [who] })
+export async function readIsBeneficiary(who: Address, address: Address = getActiveVault()) {
+  return readVaultFn<boolean>(address, 'isBeneficiary', [who])
 }
 
 /** Amount of `token` already paid to `heir`. */
-export async function readReleased(heir: Address, token: Address = ETH, address: Address = VAULT_ADDRESS) {
-  return (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'released', args: [token, heir] })
+export async function readReleased(heir: Address, token: Address = ETH, address: Address = getActiveVault()) {
+  return readVaultFn<bigint>(address, 'released', [token, heir])
 }
 
 /** The split that applies to `token` (its own plan or the default). */
-export async function readPlan(token: Address = ETH, address: Address = VAULT_ADDRESS): Promise<Allocation[]> {
-  const plan = await (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'getPlan', args: [token] })
+export async function readPlan(token: Address = ETH, address: Address = getActiveVault()): Promise<Allocation[]> {
+  const plan = await readVaultFn<RawAllocation[]>(address, 'getPlan', [token])
   return plan.map(toAllocation)
 }
 
 /** Next unlock / installment time for `heir` in `token` (ms, 0 = nothing pending). */
-export async function readNextUnlock(heir: Address, token: Address = ETH, address: Address = VAULT_ADDRESS) {
-  return Number(await (publicClient.readContract as any)({ address, abi: heirloomVaultAbi, functionName: 'nextUnlock', args: [token, heir] })) * 1000
+export async function readNextUnlock(heir: Address, token: Address = ETH, address: Address = getActiveVault()) {
+  return Number(await readVaultFn<bigint>(address, 'nextUnlock', [token, heir])) * 1000
 }
 
 function wallet() {
@@ -173,9 +196,10 @@ export async function signMessage(message: string): Promise<{ account: Address; 
 type VaultWrite =
   | { functionName: 'pingHeartbeat' | 'vetoRecovery' | 'attestGuardian' | 'revokeAttestation' | 'executeRelease' }
   | { functionName: 'claim'; args: readonly [Address, Address] }
+  | { functionName: 'distribute'; args: readonly [Address] }
 
 /** Send a vault transaction from the connected wallet and wait for it to be mined. */
-export async function writeVault(call: VaultWrite, address: Address = VAULT_ADDRESS): Promise<Hash> {
+export async function writeVault(call: VaultWrite, address: Address = getActiveVault()): Promise<Hash> {
   const account = await connectWallet()
   const { request } = await publicClient.simulateContract({
     account,
@@ -211,3 +235,60 @@ export function explainError(e: unknown): string {
 export const short = (a?: string) => (a ? `${a.slice(0, 6)}…${a.slice(-4)}` : '')
 export const txUrl = (h: string) => `${EXPLORER}/tx/${h}`
 export const addrUrl = (a: string) => `${EXPLORER}/address/${a}`
+
+
+// ---------------------------------------------------------------------------------------------
+// B2B2C helpers (law-firm creates vaults, client deposits, guardians vote gaslessly)
+// ---------------------------------------------------------------------------------------------
+
+/** HeirloomVault v2 Config, as passed to HeirloomVaultFactory.createVault. */
+export interface VaultConfig {
+  owner: Address
+  executor: Address
+  guardians: Address[]
+  requiredSignatures: bigint
+  inactivityThreshold: bigint
+  vetoGracePeriod: bigint
+  assetMapCID: string
+  defaultAllocations: RawAllocation[]
+  tokenPlans: { token: Address; allocations: RawAllocation[] }[]
+  nftRules: { collection: Address; tokenId: bigint; beneficiary: Address; unlockAt: bigint }[]
+  nftFallback: Address
+}
+
+/** Create a client vault through the factory from the connected (law-firm) wallet. */
+export async function createVaultOnChain(cfg: VaultConfig, salt: bigint): Promise<{ vault: Address; txHash: Hash }> {
+  const account = await connectWallet()
+  const { request, result } = await publicClient.simulateContract({
+    account,
+    address: FACTORY_ADDRESS,
+    abi: heirloomVaultFactoryAbi,
+    functionName: 'createVault',
+    args: [cfg, salt],
+  })
+  const txHash = await wallet().writeContract(request)
+  const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+  if (receipt.status !== 'success') throw new Error('Vault creation reverted')
+  return { vault: result as Address, txHash }
+}
+
+/** Send ETH from the connected wallet (e.g. the client funding their vault). */
+export async function sendEth(to: Address, wei: bigint): Promise<Hash> {
+  const account = await connectWallet()
+  const hash = await wallet().sendTransaction({ account, to, value: wei, chain: sepolia })
+  const receipt = await publicClient.waitForTransactionReceipt({ hash })
+  if (receipt.status !== 'success') throw new Error('Transfer reverted')
+  return hash
+}
+
+/** Guardian signs the EIP-712 attestation for the vault's current round (no gas). */
+export async function signAttestation(vault: Address, validForSeconds = 7 * 86400) {
+  const account = await connectWallet()
+  const epoch = await readVaultFn<bigint>(vault, 'epoch')
+  const deadline = BigInt(Math.floor(Date.now() / 1000) + validForSeconds)
+  const typed = attestTypedData(vault, sepolia.id, epoch, deadline)
+  const signature = await wallet().signTypedData({ account, ...typed })
+  return { guardian: account, deadline, signature }
+}
+
+export const ZERO = '0x0000000000000000000000000000000000000000' as Address

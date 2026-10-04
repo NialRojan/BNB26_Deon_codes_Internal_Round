@@ -34,7 +34,7 @@ function useEscrow() {
   }, [])
   useEffect(() => {
     reload()
-  }, [reload, chain.account])
+  }, [reload, chain.account, chain.vaultAddress])
 
   const act = async (label: string, fn: () => Promise<string>) => {
     setBusy(label)

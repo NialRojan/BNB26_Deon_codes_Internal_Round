@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { useB2B2C } from "../../lib/b2b2cStore";
+import { useVault } from "../../lib/vault";
+import { GuardianEscrowCard } from "../../components/EscrowPanels";
 import type { ClientVault } from "../../data/mockData";
 
 type VoteTxState = "idle" | "signing" | "submitting" | "confirmed";
 
 export default function GuardianRecoveryPortal() {
-  const { vaults, submitGuardianAttestation } = useB2B2C();
+  const { vaults, submitGuardianAttestation, live, setActiveVaultId } = useB2B2C();
+  const { chain } = useVault();
+  const [voteError, setVoteError] = useState<string | null>(null);
   const [selectedVault, setSelectedVault] = useState<ClientVault | null>(null);
   const [attestationVote, setAttestationVote] = useState<"approve" | "reject" | null>(null);
   const [voteTxState, setVoteTxState] = useState<VoteTxState>("idle");
@@ -17,13 +21,28 @@ export default function GuardianRecoveryPortal() {
   );
 
   const handleOpenReview = (vault: ClientVault) => {
+    if (live) setActiveVaultId(vault.id);
+    setVoteError(null);
     setSelectedVault(vault);
     setAttestationVote(null);
     setVoteTxState("idle");
   };
 
-  const handleExecuteAttestation = () => {
+  const handleExecuteAttestation = async () => {
     if (!selectedVault || !attestationVote) return;
+    if (live) {
+      // Real: the connected guardian signs (free); the relayer submits and pays gas.
+      const me = selectedVault.guardians.find((g) => g.wallet.toLowerCase() === chain.account?.toLowerCase());
+      if (!me) return setVoteError("The connected wallet is not a guardian of this vault. Switch account in MetaMask.");
+      setVoteError(null);
+      setVoteTxState("signing");
+      const ok = await (submitGuardianAttestation(selectedVault.id, me.id, attestationVote === "approve") as unknown as Promise<boolean>);
+      if (!ok) {
+        setVoteError(live.lastError());
+        setVoteTxState("idle");
+      } else setVoteTxState("confirmed");
+      return;
+    }
     setVoteTxState("signing");
     setTimeout(() => {
       setVoteTxState("submitting");
@@ -61,6 +80,16 @@ export default function GuardianRecoveryPortal() {
           <div className="shield" style={{ background: "#8fd3ff" }}>◉</div>
         </div>
       </section>
+
+      {live && (
+        <div className="space-y-3">
+          <p className="text-xs text-[#718077]">
+            {chain.account ? `Connected guardian wallet ${chain.account.slice(0, 6)}…${chain.account.slice(-4)}` : "Connect your guardian wallet (top right)."} · Vault {chain.vaultAddress.slice(0, 6)}…{chain.vaultAddress.slice(-4)}
+          </p>
+          <GuardianEscrowCard />
+        </div>
+      )}
+      {voteError && <p role="alert" className="rounded-lg bg-[#fff0ed] px-3 py-2 text-xs text-[#8a2f28]">{voteError}</p>}
 
       {/* Pending Recovery Requests Header */}
       <div>

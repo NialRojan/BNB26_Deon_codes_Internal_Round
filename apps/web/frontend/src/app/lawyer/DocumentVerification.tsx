@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useB2B2C } from "../../lib/b2b2cStore";
 
 export default function DocumentVerification() {
-  const { vaults, verifyDeathCertificate, submitDeathCertificate, lawFirm } = useB2B2C();
+  const { vaults, verifyDeathCertificate, submitDeathCertificate, lawFirm, live } = useB2B2C();
   const [selectedVaultId, setSelectedVaultId] = useState<string>(
     vaults.find((v) => v.deathCertificateStatus === "Pending")?.id || vaults[0].id
   );
@@ -23,8 +23,12 @@ export default function DocumentVerification() {
     setTimeout(() => setUploadSuccess(false), 2500);
   };
 
-  const handleAction = (approve: boolean) => {
-    verifyDeathCertificate(currentVault.id, approve);
+  const handleAction = async (approve: boolean) => {
+    const ok = await (verifyDeathCertificate(currentVault.id, approve) as unknown as Promise<boolean | void>);
+    if (ok === false) {
+      setVerificationFeedback(live?.lastError() ?? "Review failed.");
+      return;
+    }
     setVerificationFeedback(
       approve
         ? "Document successfully verified by Mehta & Partners. On-chain status updated."

@@ -7,6 +7,8 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   // Clean up tables in reverse foreign key order
+  await prisma.firmClient.deleteMany({});
+  await prisma.firm.deleteMany({});
   await prisma.auditEvent.updateMany({ data: { anchorBatchId: null, anchorSeq: null } });
   await prisma.auditAnchorBatch.deleteMany({});
   await prisma.escrowShare.deleteMany({});

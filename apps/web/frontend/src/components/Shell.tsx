@@ -5,6 +5,7 @@ import { useB2B2C, type Role } from "../lib/b2b2cStore";
 import VetoBanner from "./VetoBanner";
 import DemoBar from "./DemoBar";
 import { TxToast, WalletButton } from "./ChainStatus";
+import { B2BToast, FirmSessionBar } from "./FirmSession";
 import { Button, StateChip } from "./ui";
 
 const roleInfo: Record<Role, { name: string; subtitle: string; icon: string; eyebrow: string }> = {
@@ -330,6 +331,7 @@ export default function Shell() {
         </header>
 
         <main className="page-canvas">
+          <FirmSessionBar />
           <Outlet />
         </main>
 
@@ -343,6 +345,7 @@ export default function Shell() {
 
       <DemoBar />
       <TxToast />
+      <B2BToast />
     </div>
   );
 }
