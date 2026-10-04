@@ -324,6 +324,9 @@ export function useLiveB2B(chain: Chain, role: Role, enabled: boolean) {
     let created: ClientVault | null = null
     await run('Create vault', async () => {
       const rules = opts.rules ?? emptyRules()
+      // The factory records the sending wallet as creator; the backend only accepts vaults the signed-in firm created.
+      if (firm && lc(chain.account ?? '') !== lc(firm.wallet))
+        throw new Error(`MetaMask is on ${chain.account ? short(chain.account) : 'no account'}, but the firm signed in with ${short(firm.wallet)}. Switch MetaMask to the firm wallet, then create the vault.`)
       const problems = validatePlan(data, rules)
       if (problems.length) throw new Error(problems.join(' '))
       // The firm wallet becomes the executor (reads the legal packet after release).

@@ -181,8 +181,15 @@ export function createB2BRouter(chain: B2BChain) {
     const firm = await prisma.firm.findUnique({ where: { wallet } });
     if (!firm) throw new HttpError(403, "Register the firm first");
     const b = ClientBody.parse(req.body);
-    const creator = (await chain.creatorOf(b.vaultAddress as Address)).toLowerCase();
-    if (creator !== wallet) throw new HttpError(403, "The factory does not record this firm as the vault's creator");
+    // The backend's RPC node can lag the one the browser waited on; a just-created vault then reads as creator 0x0.
+    let creator = (await chain.creatorOf(b.vaultAddress as Address)).toLowerCase();
+    for (let i = 0; i < 5 && /^0x0{40}$/.test(creator); i++) {
+      await new Promise((r) => setTimeout(r, 3000));
+      creator = (await chain.creatorOf(b.vaultAddress as Address)).toLowerCase();
+    }
+    if (creator !== wallet) throw new HttpError(403, /^0x0{40}$/.test(creator)
+      ? "The factory has no record of this vault yet. Wait a few seconds and try again."
+      : `The factory records ${creator} as this vault's creator, not the signed-in firm wallet ${wallet}. Create vaults with MetaMask on the firm wallet.`);
     const owner = (await chain.ownerOf(b.vaultAddress as Address)).toLowerCase();
     if (owner !== b.clientWallet) throw new HttpError(400, "clientWallet does not match the vault owner on-chain");
     const row = await prisma.firmClient.create({
