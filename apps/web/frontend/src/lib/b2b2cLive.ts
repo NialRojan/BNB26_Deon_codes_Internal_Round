@@ -179,10 +179,19 @@ export function useLiveB2B(chain: Chain, role: Role, enabled: boolean) {
   const addresses = useMemo(() => {
     const set = new Map<string, Address>()
     for (const r of records) set.set(lc(r.vaultAddress), r.vaultAddress)
-    // Clients/guardians/heirs also see the vault the app points at (e.g. opened by link). A law firm sees only its own clients.
-    if (role !== 'lawyer' || linkRecords.length) set.set(lc(chain.vaultAddress), chain.vaultAddress)
+    // A wallet with no vaults of its own still sees the app's default (demo) vault. Otherwise it would show up as an
+    // extra unnamed "Vault 0x…" card next to the wallet's real vaults. A law firm sees only its own clients.
+    if (role !== 'lawyer' && !records.length) set.set(lc(chain.vaultAddress), chain.vaultAddress)
     return [...set.values()]
-  }, [records, chain.vaultAddress, role, linkRecords.length])
+  }, [records, chain.vaultAddress, role])
+
+  // Point the app (header role, demo controls, claims) at one of this wallet's own vaults once they load.
+  useEffect(() => {
+    if (!enabled || role === 'lawyer' || !records.length) return
+    if (records.some((r) => lc(r.vaultAddress) === lc(chain.vaultAddress))) return
+    setActiveVaultIdState(lc(records[0].vaultAddress))
+    chain.selectVault(records[0].vaultAddress)
+  }, [enabled, role, records, chain])
 
   // ---- on-chain state for every listed vault
   const loadChain = useCallback(async () => {
