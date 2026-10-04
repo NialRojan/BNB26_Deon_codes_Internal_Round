@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useVault } from "../lib/vault";
 import { useB2B2C, type Role } from "../lib/b2b2cStore";
 import VetoBanner from "./VetoBanner";
-import DemoBar from "./DemoBar";
 import { TxToast, WalletButton } from "./ChainStatus";
 import { B2BToast, FirmEmptyState, FirmSessionBar } from "./FirmSession";
 import { Button, StateChip } from "./ui";
@@ -248,52 +247,6 @@ export default function Shell() {
             </section>
           )}
 
-          {/* Quick Cross-Role Demo Switcher */}
-          <section className="nav-group pt-4 border-t border-[#243129] mt-4">
-            <div className="nav-label">DIRECT ROLE LINKS</div>
-            <div className="grid grid-cols-2 gap-1 px-1">
-              <NavLink
-                to="/lawyer"
-                className={({ isActive }) =>
-                  `rounded px-2 py-1 text-[10px] text-center transition ${
-                    isActive ? "bg-[#a3e635] text-[#17221b] font-bold" : "bg-[#111e16] text-[#aab5ad] hover:text-white"
-                  }`
-                }
-              >
-                Lawyer
-              </NavLink>
-              <NavLink
-                to="/client/vault"
-                className={({ isActive }) =>
-                  `rounded px-2 py-1 text-[10px] text-center transition ${
-                    isActive ? "bg-[#a3e635] text-[#17221b] font-bold" : "bg-[#111e16] text-[#aab5ad] hover:text-white"
-                  }`
-                }
-              >
-                Client
-              </NavLink>
-              <NavLink
-                to="/guardian"
-                className={({ isActive }) =>
-                  `rounded px-2 py-1 text-[10px] text-center transition ${
-                    isActive ? "bg-[#a3e635] text-[#17221b] font-bold" : "bg-[#111e16] text-[#aab5ad] hover:text-white"
-                  }`
-                }
-              >
-                Guardian
-              </NavLink>
-              <NavLink
-                to="/heir/releases"
-                className={({ isActive }) =>
-                  `rounded px-2 py-1 text-[10px] text-center transition ${
-                    isActive ? "bg-[#a3e635] text-[#17221b] font-bold" : "bg-[#111e16] text-[#aab5ad] hover:text-white"
-                  }`
-                }
-              >
-                Heir
-              </NavLink>
-            </div>
-          </section>
         </nav>
 
         {/* Sidebar Footer */}
@@ -350,7 +303,6 @@ export default function Shell() {
         </footer>
       </div>
 
-      <DemoBar />
       <TxToast />
       <B2BToast />
     </div>

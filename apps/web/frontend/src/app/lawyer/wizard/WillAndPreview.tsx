@@ -64,7 +64,7 @@ export function AddressPreview({ data, rules, salt, firmWallet, firmName, live }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, live, salt])
 
-  if (!live) return <p className="text-[11px] text-[#718077]">Switch Demo controls to "Sepolia (live)" to reserve a real vault address.</p>
+  if (!live) return <p className="text-[11px] text-[#718077]">Connect to Sepolia to reserve a real vault address.</p>
   if (problems.length)
     return (
       <div className="rounded-lg bg-[#fef2f2] p-3 text-xs text-[#b91c1c]">
