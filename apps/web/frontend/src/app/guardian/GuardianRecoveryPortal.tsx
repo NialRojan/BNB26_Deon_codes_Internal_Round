@@ -3,11 +3,12 @@ import { useB2B2C } from "../../lib/b2b2cStore";
 import { useVault } from "../../lib/vault";
 import { GuardianEscrowCard } from "../../components/EscrowPanels";
 import type { ClientVault } from "../../data/mockData";
+import PartyRoster from "../../components/PartyRoster";
 
 type VoteTxState = "idle" | "signing" | "submitting" | "confirmed";
 
 export default function GuardianRecoveryPortal() {
-  const { vaults, submitGuardianAttestation, live, setActiveVaultId } = useB2B2C();
+  const { vaults, activeVault, submitGuardianAttestation, live, setActiveVaultId } = useB2B2C();
   const { chain } = useVault();
   const [voteError, setVoteError] = useState<string | null>(null);
   const [selectedVault, setSelectedVault] = useState<ClientVault | null>(null);
@@ -89,6 +90,27 @@ export default function GuardianRecoveryPortal() {
           <GuardianEscrowCard />
         </div>
       )}
+      {/* Every guardian of the selected vault, with their vote this round */}
+      <div className="space-y-2">
+        {vaults.length > 1 && (
+          <div className="flex items-center justify-end gap-2">
+            <label className="text-xs font-semibold text-[#718077]">Vault:</label>
+            <select
+              value={activeVault.id}
+              onChange={(e) => setActiveVaultId(e.target.value)}
+              className="rounded-lg border border-[#dce4dc] px-2.5 py-1.5 text-xs font-bold text-[#17221b]"
+            >
+              {vaults.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.clientName} ({v.status})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        <PartyRoster vault={activeVault} kind="guardian" me={chain.account} />
+      </div>
+
       {voteError && <p role="alert" className="rounded-lg bg-[#fff0ed] px-3 py-2 text-xs text-[#8a2f28]">{voteError}</p>}
 
       {/* Pending Recovery Requests Header */}

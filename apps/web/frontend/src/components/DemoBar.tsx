@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useVault, type VaultState } from "../lib/vault";
 import { addrUrl, short } from "../lib/chain";
 import { formatEther } from "viem";
@@ -16,6 +16,7 @@ const b =
 
 export default function DemoBar() {
   const v = useVault();
+  const onClientPage = useLocation().pathname.startsWith("/client");
   return (
     <details className="glass fixed bottom-4 left-4 z-40 max-w-[calc(100vw-2rem)] rounded-xl text-sm">
       <summary className="cursor-pointer select-none px-3 py-2 font-semibold">
@@ -40,7 +41,7 @@ export default function DemoBar() {
             <div className="flex flex-wrap gap-1.5 pt-1">
               <button className={b} onClick={v.checkIn}>Owner: I'm alive</button>
               <button className={b} onClick={v.chain.attest}>Guardian: attest</button>
-              <button className={b} onClick={v.cancelRecovery}>Owner: veto</button>
+              {onClientPage && <button className={b} onClick={v.cancelRecovery}>Owner: veto</button>}
               <button className={b} onClick={v.advance}>Execute release</button>
               <button className={b} onClick={v.chain.claimEth}>Heir: claim ETH</button>
             </div>

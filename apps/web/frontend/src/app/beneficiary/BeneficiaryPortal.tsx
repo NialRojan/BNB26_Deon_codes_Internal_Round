@@ -3,6 +3,8 @@ import { useVault } from '../../lib/vault'
 import { Button, Card, field, Locked, Page } from '../../components/ui'
 import { formatEther } from 'viem'
 import { HeirEscrowCard } from '../../components/EscrowPanels'
+import PartyRoster from '../../components/PartyRoster'
+import { useB2B2C } from '../../lib/b2b2cStore'
 
 export default function BeneficiaryPortal() {
   const v = useVault()
@@ -19,10 +21,12 @@ export default function BeneficiaryPortal() {
   }
 
   const { live, chain } = v
+  const { activeVault } = useB2B2C()
   const share = chain.ethPlan.find((b) => b.wallet.toLowerCase() === chain.account?.toLowerCase())
 
   return (
     <Page title="Heir portal" intro="What you can open depends on your tier and the current release stage. Crypto always opens last.">
+      <PartyRoster vault={activeVault} kind="heir" me={chain.account} />
       {live && (
         <>
           <h2 className="text-xl font-bold">On-chain inheritance</h2>

@@ -13,8 +13,7 @@ interface TimelineStage {
 }
 
 export default function RecoveryTimelinePage() {
-  const { vaults, activeVault, cancelRecovery, setActiveVaultId } = useB2B2C();
-  const [showVetoConfirm, setShowVetoConfirm] = useState(false);
+  const { vaults, activeVault, setActiveVaultId, role } = useB2B2C();
   const [selectedVaultId, setSelectedVaultId] = useState(activeVault.id);
 
   const vault = vaults.find((v) => v.id === selectedVaultId) || activeVault;
@@ -116,11 +115,6 @@ export default function RecoveryTimelinePage() {
     },
   ];
 
-  const handleCancelRecovery = () => {
-    cancelRecovery(vault.id);
-    setShowVetoConfirm(false);
-  };
-
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       {/* Header & Vault Switcher */}
@@ -167,16 +161,19 @@ export default function RecoveryTimelinePage() {
                 </h4>
                 <p className="text-xs text-[#7f1d1d] max-w-xl leading-relaxed">
                   A recovery sequence has been opened for <b>{vault.clientName}</b>.
-                  If you are the living owner and safe, you can instantly terminate this process and restore your vault.
+                  Only the living owner can cancel it, from their own client vault page.
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => setShowVetoConfirm(true)}
-              className="rounded-lg bg-[#b91c1c] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#991b1b] transition whitespace-nowrap"
-            >
-              [ CANCEL RECOVERY ]
-            </button>
+            {/* The veto itself lives on the client's page only. */}
+            {role === "client" && (
+              <Link
+                to="/client/vault"
+                className="rounded-lg bg-[#b91c1c] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#991b1b] transition whitespace-nowrap"
+              >
+                Go to My Vault to cancel →
+              </Link>
+            )}
           </div>
         </div>
       )}
@@ -297,43 +294,6 @@ export default function RecoveryTimelinePage() {
         </div>
       </div>
 
-      {/* VETO CANCELLATION MODAL */}
-      {showVetoConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border-2 border-[#ef4444] bg-white p-6 shadow-2xl space-y-4">
-            <div className="flex items-center gap-3 text-[#b91c1c]">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fee2e2] text-xl font-bold">
-                !
-              </span>
-              <div>
-                <h3 className="text-lg font-bold text-[#17221b]">Cancel Recovery?</h3>
-                <p className="text-xs text-[#718077]">This will return your vault to ACTIVE.</p>
-              </div>
-            </div>
-
-            <p className="text-xs text-[#4b5563] leading-relaxed">
-              You are exercising your living owner veto right. All pending recovery requests and guardian attestations will be dismissed, and the vault heartbeat reset.
-            </p>
-
-            <div className="flex justify-end gap-2 border-t border-[#edf0ed] pt-3">
-              <button
-                type="button"
-                onClick={() => setShowVetoConfirm(false)}
-                className="rounded-lg border border-[#dce4dc] px-3 py-2 text-xs font-semibold text-[#2b382e]"
-              >
-                Keep Recovery
-              </button>
-              <button
-                type="button"
-                onClick={handleCancelRecovery}
-                className="rounded-lg bg-[#b91c1c] px-4 py-2 text-xs font-bold text-white hover:bg-[#991b1b]"
-              >
-                [ Cancel Recovery ]
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

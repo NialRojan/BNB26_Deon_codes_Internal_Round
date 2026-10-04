@@ -50,7 +50,7 @@ const clientLinks = [
   ["/client/deposit", "Deposit Crypto", ""],
   ["/client/seal", "Seal Secret Browser-Side", ""],
   ["/client/customize", "Per-Asset Customization", ""],
-  ["/recovery", "Recovery & Veto Status", ""],
+  ["/recovery", "Recovery Status", ""],
 ];
 
 const guardianLinks = [
@@ -301,9 +301,8 @@ export default function Shell() {
 
         {/* Sidebar Footer */}
         <div className="sidebar-bottom">
-          <NavLink to="/recovery" className="nav-link">
-            
-            Emergency Veto & Status
+          <NavLink to={role === "client" ? "/client/vault" : "/recovery"} className="nav-link">
+            {role === "client" ? "Emergency Veto & Status" : "Recovery Status"}
           </NavLink>
           <div className="user-profile">
             <span className="avatar" style={{ background: "#a3e635", color: "#111" }}>
@@ -319,7 +318,8 @@ export default function Shell() {
 
       {/* Main Content Area */}
       <div className="main-frame">
-        <VetoBanner />
+        {/* The veto belongs to the client: only client pages carry it. */}
+        {pathname.startsWith("/client") && <VetoBanner />}
 
         <header className="topbar">
           <div>

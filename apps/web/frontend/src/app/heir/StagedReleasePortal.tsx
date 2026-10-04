@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useB2B2C } from "../../lib/b2b2cStore";
+import { useVault } from "../../lib/vault";
+import PartyRoster from "../../components/PartyRoster";
 
 interface StageCard {
   stage: number;
@@ -20,6 +22,7 @@ export default function StagedReleasePortal() {
     vaults.find((v) => v.status === "EXECUTED")?.id || activeVault.id
   );
   const [downloadedPacket, setDownloadedPacket] = useState(false);
+  const { chain } = useVault();
 
   const vault = vaults.find((v) => v.id === selectedVaultId) || activeVault;
   const isExecuted = vault.status === "EXECUTED";
@@ -126,6 +129,8 @@ export default function StagedReleasePortal() {
           </select>
         </div>
       </div>
+
+      <PartyRoster vault={vault} kind="heir" me={chain.account} />
 
       {/* Execution Context Banner */}
       <div className="rounded-xl border border-[#e1e8e1] bg-white p-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
