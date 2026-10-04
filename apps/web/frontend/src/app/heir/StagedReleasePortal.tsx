@@ -32,7 +32,7 @@ export default function StagedReleasePortal() {
       statusColor: isExecuted ? "bg-[#e0f2fe] text-[#0369a1]" : "bg-gray-100 text-gray-600",
       beneficiary: `Designated Heirs: ${vault.heirs.map((h) => h.name.split(" ")[0]).join(", ")}`,
       condition: "Released once the will is executed on-chain; guardians hand their key pieces to the heirs",
-      countdown: isExecuted ? "Open on the Claim page" : "Awaiting execution",
+      countdown: isExecuted ? "Open in Claim Beneficiary Assets" : "Awaiting execution",
       items: [
         { title: "Password Manager Emergency Recovery", detail: "Encrypted browser-side key shards · Decrypted on heir devices" },
         { title: "Primary Email & 2FA Recovery Tokens", detail: "Emergency cloud keys for accounts management" },
@@ -46,7 +46,7 @@ export default function StagedReleasePortal() {
       statusColor: isExecuted ? "bg-[#fef3c7] text-[#92400e]" : "bg-gray-100 text-gray-600",
       beneficiary: "All Heirs per Custom Asset Rules",
       condition: "Paid out by the vault contract per the owner's rules: unlock dates and instalments if set",
-      countdown: isExecuted ? "Claim on the Claim page" : "Locked",
+      countdown: isExecuted ? "Claim in Claim Beneficiary Assets" : "Locked",
       items: [
         { title: "Ethereum Vault Balance (14.5 ETH)", detail: "Custom Split: Asha 70%, Arjun 30% (Age 21 milestone rule)" },
         { title: "Bitcoin Cold Storage (1.25 BTC)", detail: "Distributed equally to all heirs" },
