@@ -3,10 +3,11 @@
 import { escrow, generateHeirKeyPair, serializePublicKey } from '@heirloom/crypto'
 import type { EncryptedAsset } from '@heirloom/crypto'
 import { escrowMessages, type EscrowRole } from '@heirloom/contracts'
-import { signMessage, VAULT_ADDRESS } from './chain'
+import { getActiveVault, signMessage } from './chain'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1'
-const vault = VAULT_ADDRESS.toLowerCase()
+/** Escrow always applies to the vault the app is currently looking at. */
+const currentVault = () => getActiveVault().toLowerCase()
 
 async function api<T>(path: string, init?: { method?: string; body?: unknown }): Promise<T> {
   let res: Response
@@ -25,7 +26,7 @@ async function api<T>(path: string, init?: { method?: string; body?: unknown }):
 }
 
 // ---------------------------------------------------------------- local key storage
-const storeKey = (address: string, role: EscrowRole) => `heirloom:escrow:${vault}:${address.toLowerCase()}:${role}`
+const storeKey = (address: string, role: EscrowRole) => `heirloom:escrow:${currentVault()}:${address.toLowerCase()}:${role}`
 
 function loadPrivateJwk(address: string, role: EscrowRole): string | null {
   try {
@@ -48,16 +49,16 @@ export interface PublicKeyRow { address: string; role: EscrowRole; publicKey: st
 export interface SecretRow { id: string; label: string; threshold: number; createdAt: string; held: { guardian: string; encryptedShare: string }[]; recipients: string[] | null; releasedBy: string[] }
 interface ReleasedRow { id: string; label: string; threshold: number; asset: EncryptedAsset; shares: { guardian: string; encryptedShare: string }[] }
 
-export const listKeys = () => api<PublicKeyRow[]>(`/escrow/keys?vault=${vault}`)
-export const listSecrets = () => api<SecretRow[]>(`/escrow/secrets?vault=${vault}`)
+export const listKeys = () => api<PublicKeyRow[]>(`/escrow/keys?vault=${currentVault()}`)
+export const listSecrets = () => api<SecretRow[]>(`/escrow/secrets?vault=${currentVault()}`)
 
 // ---------------------------------------------------------------- actions
 /** Guardian/heir: create an encryption key pair on this device and publish the public half. */
 export async function registerKey(role: EscrowRole) {
   const pair = await generateHeirKeyPair()
   const publicKey = await serializePublicKey(pair.publicKey)
-  const { account, signature } = await signMessage(escrowMessages.registerKey(vault, role, publicKey))
-  await api('/escrow/keys', { method: 'POST', body: { vaultAddress: vault, address: account, role, publicKey, signature } })
+  const { account, signature } = await signMessage(escrowMessages.registerKey(currentVault(), role, publicKey))
+  await api('/escrow/keys', { method: 'POST', body: { vaultAddress: currentVault(), address: account, role, publicKey, signature } })
   localStorage.setItem(storeKey(account, role), await escrow.exportPrivateKey(pair.privateKey))
   return account
 }
@@ -70,8 +71,8 @@ export async function sealSecret(label: string, secret: string, threshold: numbe
     throw new Error(`${guardians.length} of the needed ${threshold} guardians have registered a key. Ask them to open the Guardian portal first.`)
   const { asset, shares } = await escrow.sealSecret(secret, guardians, threshold)
   const to = recipients?.length ? recipients.map((r) => r.toLowerCase()) : null
-  const { signature } = await signMessage(escrowMessages.sealSecret(vault, label, asset, shares, to))
-  return api<{ id: string }>('/escrow/secrets', { method: 'POST', body: { vaultAddress: vault, label, asset, threshold, shares, signature, ...(to ? { recipients: to } : {}) } })
+  const { signature } = await signMessage(escrowMessages.sealSecret(currentVault(), label, asset, shares, to))
+  return api<{ id: string }>('/escrow/secrets', { method: 'POST', body: { vaultAddress: currentVault(), label, asset, threshold, shares, signature, ...(to ? { recipients: to } : {}) } })
 }
 
 /** Guardian (after execution): decrypt own shares and re-encrypt them to every registered heir. */
@@ -100,7 +101,7 @@ export interface Recovered { id: string; label: string; plaintext?: string; have
 export async function recoverSecrets(heir: string): Promise<Recovered[]> {
   const me = heir.toLowerCase()
   const key = await privateKey(me, 'HEIR')
-  const rows = await api<ReleasedRow[]>(`/escrow/released?vault=${vault}&heir=${me}`)
+  const rows = await api<ReleasedRow[]>(`/escrow/released?vault=${currentVault()}&heir=${me}`)
   return Promise.all(
     rows.map(async (r) => {
       const base = { id: r.id, label: r.label, have: r.shares.length, need: r.threshold }
