@@ -48,7 +48,6 @@ const clientLinks = [
   ["/client/deposit", "Deposit Crypto", ""],
   ["/client/seal", "Seal Secret Browser-Side", ""],
   ["/client/customize", "Per-Asset Customization", ""],
-  ["/recovery", "Recovery & Veto Status", ""],
 ];
 
 const guardianLinks = [
