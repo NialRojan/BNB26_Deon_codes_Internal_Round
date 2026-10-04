@@ -66,7 +66,7 @@ export default function BeneficiaryPortal() {
 
       <h2 className="text-xl font-bold">Recovery kit</h2>
       {!kitOpen ? (
-        <Locked title="The recovery kit is still locked" text="It opens at stage 2, after a further timelock." />
+        <Locked title="The recovery kit is still locked" text="It opens at stage 1, once the will is executed." />
       ) : (
         <Card>
           <ul className="divide-y divide-white/10">
@@ -83,7 +83,7 @@ export default function BeneficiaryPortal() {
 
       <h2 className="pt-4 text-xl font-bold">Crypto vault</h2>
       {!cryptoOpen ? (
-        <Locked title="The crypto vault is still locked" text="It opens at stage 3, after a second verification and the final timelock." />
+        <Locked title="The crypto vault is still locked" text="It opens at stage 2, after the passwords are released." />
       ) : (
         <Card>
           <p className="text-sm text-white/60">Enter {v.k} key shares to rebuild the vault key. Shares never leave this browser.</p>

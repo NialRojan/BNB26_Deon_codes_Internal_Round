@@ -56,7 +56,6 @@ const guardianLinks = [
 
 const heirLinks = [
   ["/heir/releases", "Staged Releases", ""],
-  ["/executor", "Executor Legal Packet", ""],
   ["/heir", "Claim Beneficiary Assets", ""],
   ["/lawyer/verification", "Upload Death Certificate", ""],
 ];

@@ -19,7 +19,6 @@ export default function StagedReleasePortal() {
   const [selectedVaultId, setSelectedVaultId] = useState(
     vaults.find((v) => v.status === "EXECUTED")?.id || activeVault.id
   );
-  const [downloadedPacket, setDownloadedPacket] = useState(false);
 
   const vault = vaults.find((v) => v.id === selectedVaultId) || activeVault;
   const isExecuted = vault.status === "EXECUTED";
@@ -27,41 +26,27 @@ export default function StagedReleasePortal() {
   const stages: StageCard[] = [
     {
       stage: 1,
-      name: "Stage 1 — Legal Packet",
-      category: "Legal Dossier & Bank Folios",
-      status: isExecuted ? "Released" : "Locked",
-      statusColor: isExecuted ? "bg-[#dcfce7] text-[#166534]" : "bg-gray-100 text-gray-600",
-      beneficiary: `Executor: ${vault.executor}`,
-      condition: "Immediate release upon Digital Will execution by Law Firm",
-      countdown: isExecuted ? "Released on Oct 1, 2026 ✓" : "Awaiting Will Execution",
-      items: [
-        { title: "Bank Account Transmission Dossier", detail: "HDFC Private Banking & Demat Folios for probate claim", actionText: "Download Legal Packet" },
-        { title: "Real Estate & Deed Title Copies", detail: "Bandra Property Registration Certificate & Mutation Records", actionText: "Download Dossier" },
-      ],
-    },
-    {
-      stage: 2,
-      name: "Stage 2 — Access Kit",
+      name: "Stage 1 — Passwords & Access Kit",
       category: "Password Manager & Cloud Recovery",
-      status: isExecuted ? "Timelocked" : "Locked",
+      status: isExecuted ? "Released" : "Locked",
       statusColor: isExecuted ? "bg-[#e0f2fe] text-[#0369a1]" : "bg-gray-100 text-gray-600",
       beneficiary: `Designated Heirs: ${vault.heirs.map((h) => h.name.split(" ")[0]).join(", ")}`,
-      condition: "7-Day safety timelock following Stage 1 legal execution",
-      countdown: isExecuted ? "Unlocks in 4 days, 16 hours" : "Locked",
+      condition: "Released once the will is executed on-chain; guardians hand their key pieces to the heirs",
+      countdown: isExecuted ? "Open on the Claim page" : "Awaiting execution",
       items: [
         { title: "Password Manager Emergency Recovery", detail: "Encrypted browser-side key shards · Decrypted on heir devices" },
         { title: "Primary Email & 2FA Recovery Tokens", detail: "Emergency cloud keys for accounts management" },
       ],
     },
     {
-      stage: 3,
-      name: "Stage 3 — Crypto & Digital Assets",
+      stage: 2,
+      name: "Stage 2 — Crypto & Digital Assets",
       category: "Direct Wallet Custody & NFTs",
       status: isExecuted ? "Timelocked" : "Locked",
       statusColor: isExecuted ? "bg-[#fef3c7] text-[#92400e]" : "bg-gray-100 text-gray-600",
       beneficiary: "All Heirs per Custom Asset Rules",
-      condition: "30-Day timelock + Milestone age triggers & installment schedules",
-      countdown: isExecuted ? "Unlocks in 27 days · Staged payouts active" : "Locked",
+      condition: "Paid out by the vault contract per the owner's rules: unlock dates and instalments if set",
+      countdown: isExecuted ? "Claim on the Claim page" : "Locked",
       items: [
         { title: "Ethereum Vault Balance (14.5 ETH)", detail: "Custom Split: Asha 70%, Arjun 30% (Age 21 milestone rule)" },
         { title: "Bitcoin Cold Storage (1.25 BTC)", detail: "Distributed equally to all heirs" },
@@ -69,32 +54,6 @@ export default function StagedReleasePortal() {
       ],
     },
   ];
-
-  const handleDownloadPacket = () => {
-    setDownloadedPacket(true);
-    const blob = new Blob(
-      [
-        JSON.stringify(
-          {
-            vaultAddress: vault.vaultAddress,
-            clientName: vault.clientName,
-            executor: vault.executor,
-            stage: "Stage 1 Legal Packet",
-            generated: new Date().toISOString(),
-            accounts: vault.assets.filter((a) => a.category === "Legal / Asset Information"),
-          },
-          null,
-          2
-        ),
-      ],
-      { type: "application/json" }
-    );
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `Heirloom-Legal-Packet-${vault.clientName.replace(/\s+/g, "_")}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  };
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -104,7 +63,7 @@ export default function StagedReleasePortal() {
           <span className="section-kicker">SEQUENTIAL ASSET TRANSMISSION</span>
           <h2 className="text-2xl font-bold text-[#17221b]">Staged Release Architecture</h2>
           <p className="text-xs text-[#718077]">
-            Materials are released sequentially across three distinct stages after legal execution.
+            Materials are released sequentially across two stages after the will is executed: passwords first, then crypto.
           </p>
         </div>
 
@@ -154,7 +113,7 @@ export default function StagedReleasePortal() {
         </div>
       </div>
 
-      {/* Three Staged Release Cards */}
+      {/* Staged release cards: passwords, then crypto */}
       <div className="space-y-4">
         {stages.map((stg) => (
           <div
@@ -203,16 +162,6 @@ export default function StagedReleasePortal() {
                     <b className="text-sm text-[#17221b]">{item.title}</b>
                     <p className="mt-0.5 text-[11px] text-[#68756c]">{item.detail}</p>
                   </div>
-
-                  {stg.status === "Released" && item.actionText && (
-                    <button
-                      type="button"
-                      onClick={handleDownloadPacket}
-                      className="rounded-lg bg-[#276332] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#1e4e26]"
-                    >
-                      {downloadedPacket ? "Packet Downloaded ✓" : item.actionText}
-                    </button>
-                  )}
 
                   {stg.status === "Timelocked" && (
                     <span className="text-[11px] font-semibold text-[#68756c] bg-white border border-[#e1e8e1] px-2.5 py-1 rounded">
