@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useB2B2C } from "../../lib/b2b2cStore";
-import type { HeirItem, GuardianItem } from "../../data/mockData";
+import type { HeirItem, GuardianItem, ClientVault } from "../../data/mockData";
+import { useVault } from "../../lib/vault";
+import { emptyRules, type VaultRules } from "../../lib/vaultPlan";
+import SpecialRulesStep from "./wizard/SpecialRulesStep";
+import { AddressPreview, PlanSummary, RequirementsChecklist, WillClause } from "./wizard/WillAndPreview";
 
 const STEPS = [
   "1. Client Information",
@@ -9,12 +13,17 @@ const STEPS = [
   "3. Guardians & Threshold",
   "4. Executor Designation",
   "5. Recovery Timers",
-  "6. Review & Seal",
+  "6. Special Rules",
+  "7. Review & Will",
 ];
 
 export default function CreateVaultPage() {
   const { createVault, lawFirm, live } = useB2B2C();
   const [createError, setCreateError] = useState<string | null>(null);
+  const { chain } = useVault();
+  // Optional special rules + a fixed salt so the previewed address is the one the factory assigns.
+  const [rules, setRules] = useState<VaultRules>(emptyRules());
+  const [salt] = useState(() => BigInt(Date.now()));
   const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
@@ -59,6 +68,11 @@ export default function CreateVaultPage() {
   const [createdVaultAddress, setCreatedVaultAddress] = useState<string | null>(null);
   const [createdVaultId, setCreatedVaultId] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  const planData: Omit<ClientVault, "id"> = {
+    clientName, clientEmail, clientWallet, vaultAddress: "", status: "ACTIVE", heirs, guardians, requiredApprovals, executor,
+    inactivityDays, vetoHours, lastCheckIn: "", recoveryStatusDetail: "", deathCertificateStatus: "None", guardianAttestationsCount: 0, assets: [],
+  };
 
   // Total Percentage
   const totalPercentage = heirs.reduce((sum, h) => sum + Number(h.percentage || 0), 0);
@@ -142,7 +156,7 @@ export default function CreateVaultPage() {
         { id: "a-init-2", category: "Access Kit", name: "Emergency Cloud & Password Recovery", detail: "Client to seal in browser", sealed: false },
         { id: "a-init-3", category: "Legal / Asset Information", name: "Primary Demat & Banking Accounts", detail: "Client legal dossier", institution: "Designated Banks" },
       ],
-    });
+    }, { rules, salt });
     } catch (e) {
       setCreateError(live?.lastError() ?? (e as Error).message);
       return;
@@ -212,6 +226,7 @@ export default function CreateVaultPage() {
           </div>
 
           <div className="mx-auto mt-6 max-w-lg space-y-3">
+            <WillClause clientName={clientName} vault={createdVaultAddress} firmName={lawFirm.name} required={requiredApprovals} guardians={guardians.length} vetoHours={vetoHours} />
             <div className="rounded-xl border border-[#e1e8e1] bg-white p-4 text-left shadow-sm">
               <span className="text-[10px] uppercase font-bold text-[#718077]">Client Onboarding Secure URL</span>
               <p className="mt-1 text-[11px] text-[#556358]">
@@ -252,6 +267,8 @@ export default function CreateVaultPage() {
       ) : (
         /* Wizard Steps */
         <div className="space-y-6">
+          {step === 0 && <RequirementsChecklist />}
+
           {/* Step Progress Pills */}
           <div className="flex flex-wrap gap-1.5 rounded-xl border border-[#e1e8e1] bg-white p-1.5 shadow-sm">
             {STEPS.map((s, idx) => (
@@ -599,6 +616,7 @@ export default function CreateVaultPage() {
                     onChange={(e) => setInactivityDays(Number(e.target.value))}
                     className="w-full rounded-lg border border-[#dce4dc] px-3 py-2 text-xs font-semibold text-[#17221b]"
                   >
+                    <option value={120 / 86400}>2 minutes (demo / rehearsal)</option>
                     <option value={14}>14 days (High frequency)</option>
                     <option value={30}>30 days (Standard estate default)</option>
                     <option value={60}>60 days (Relaxed schedule)</option>
@@ -616,6 +634,7 @@ export default function CreateVaultPage() {
                     onChange={(e) => setVetoHours(Number(e.target.value))}
                     className="w-full rounded-lg border border-[#dce4dc] px-3 py-2 text-xs font-semibold text-[#17221b]"
                   >
+                    <option value={180 / 3600}>3 minutes (demo / rehearsal)</option>
                     <option value={24}>24 hours (Expedited)</option>
                     <option value={48}>48 hours (Standard legal default)</option>
                     <option value={72}>72 hours (3 business days)</option>
@@ -626,11 +645,14 @@ export default function CreateVaultPage() {
             </div>
           )}
 
-          {/* STEP 6: Review & Seal */}
-          {step === 5 && (
+          {/* STEP 6: Special rules (optional) */}
+          {step === 5 && <SpecialRulesStep heirs={heirs} rules={rules} onChange={setRules} />}
+
+          {/* STEP 7: Review, address & will clause */}
+          {step === 6 && (
             <div className="rounded-xl border border-[#e1e8e1] bg-white p-6 shadow-sm space-y-4">
               <div className="border-b border-[#edf0ed] pb-3">
-                <h3 className="text-lg font-bold text-[#17221b]">Step 6 — Final Fiduciary Review</h3>
+                <h3 className="text-lg font-bold text-[#17221b]">Step 7 — Review, Vault Address & Will Clause</h3>
                 <p className="text-xs text-[#718077]">
                   Verify client parameters before generating the on-chain vault and client onboarding link.
                 </p>
@@ -674,6 +696,9 @@ export default function CreateVaultPage() {
                   ))}
                 </div>
               </div>
+
+              <PlanSummary data={planData} rules={rules} />
+              <AddressPreview data={planData} rules={rules} salt={salt} firmWallet={chain.account} firmName={lawFirm.name} live={!!live} />
 
               {!isPercentageValid && (
                 <div className="rounded-lg bg-[#fef2f2] p-3 text-xs text-[#b91c1c] font-semibold">

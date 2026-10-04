@@ -35,11 +35,11 @@ import {
 } from './b2bApi'
 import type { Role } from './b2b2cStore'
 import type { Chain } from './vault'
+import { buildVaultConfig, emptyRules, validatePlan, type VaultRules } from './vaultPlan'
 
 type Log = { id: string; time: string; text: string; actor: string; tone: 'ok' | 'warn' | 'risk' }
 const short = (a?: string) => (a ? `${a.slice(0, 6)}…${a.slice(-4)}` : '')
 const lc = (a?: string) => (a ?? '').toLowerCase()
-const isAddr = (a: string) => /^0x[0-9a-fA-F]{40}$/.test(a.trim())
 
 function ago(ms: number) {
   if (!ms) return '—'
@@ -284,27 +284,15 @@ export function useLiveB2B(chain: Chain, role: Role, enabled: boolean) {
 
   // ---- actions
   /** Lawyer: create the client's vault on-chain from the wizard data, then register it with the firm. */
-  const createVault = async (data: Omit<ClientVault, 'id'>): Promise<ClientVault> => {
+  const createVault = async (data: Omit<ClientVault, 'id'>, opts: { rules?: VaultRules; salt?: bigint } = {}): Promise<ClientVault> => {
     let created: ClientVault | null = null
     await run('Create vault', async () => {
-      const bad = [data.clientWallet, ...data.heirs.map((h) => h.wallet), ...data.guardians.map((g) => g.wallet)].filter((w) => !isAddr(w))
-      if (bad.length) throw new Error(`Enter full wallet addresses (0x + 40 hex). Invalid: ${bad.map((b) => b || '(empty)').join(', ')}`)
-      if (data.heirs.reduce((s, h) => s + Number(h.percentage), 0) !== 100) throw new Error('Heir percentages must add up to 100%.')
-      const firmWallet = (chain.account ?? ZERO) as Address
-      const cfg: VaultConfig = {
-        owner: data.clientWallet as Address,
-        executor: firmWallet, // the law firm reads the legal packet after release
-        guardians: data.guardians.map((g) => g.wallet as Address),
-        requiredSignatures: BigInt(data.requiredApprovals),
-        inactivityThreshold: BigInt(Math.max(60, Math.round(data.inactivityDays * 86400))),
-        vetoGracePeriod: BigInt(Math.max(60, Math.round(data.vetoHours * 3600))),
-        assetMapCID: '',
-        defaultAllocations: data.heirs.map((h) => ({ beneficiary: h.wallet as Address, bps: Math.round(h.percentage * 100), unlockAt: 0n, installments: 1, interval: 0 })),
-        tokenPlans: [],
-        nftRules: [],
-        nftFallback: ZERO,
-      }
-      const { vault, txHash } = await createVaultOnChain(cfg, BigInt(Date.now()))
+      const rules = opts.rules ?? emptyRules()
+      const problems = validatePlan(data, rules)
+      if (problems.length) throw new Error(problems.join(' '))
+      // The firm wallet becomes the executor (reads the legal packet after release).
+      const cfg: VaultConfig = buildVaultConfig(data, rules, (chain.account ?? ZERO) as Address)
+      const { vault, txHash } = await createVaultOnChain(cfg, opts.salt ?? BigInt(Date.now()))
       const rec = await registerClientVault({
         vaultAddress: vault,
         creationTx: txHash,

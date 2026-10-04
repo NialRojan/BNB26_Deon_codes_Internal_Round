@@ -272,6 +272,11 @@ export async function createVaultOnChain(cfg: VaultConfig, salt: bigint): Promis
   return { vault: result as Address, txHash }
 }
 
+/** Address the factory will give a vault with this exact config + salt (before it exists). */
+export async function predictVaultAddress(cfg: VaultConfig, salt: bigint): Promise<Address> {
+  return publicClient.readContract({ address: FACTORY_ADDRESS, abi: heirloomVaultFactoryAbi, functionName: 'getAddress', args: [cfg, salt] }) as Promise<Address>
+}
+
 /** Send ETH from the connected wallet (e.g. the client funding their vault). */
 export async function sendEth(to: Address, wei: bigint): Promise<Hash> {
   const account = await connectWallet()

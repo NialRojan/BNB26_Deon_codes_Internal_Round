@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { useVault } from "./vault";
 import { useLiveB2B, type LiveExtras } from "./b2b2cLive";
+import type { VaultRules } from "./vaultPlan";
 import {
   INITIAL_CLIENT_VAULTS,
   LAW_FIRM,
@@ -20,7 +21,7 @@ export interface B2B2CContextType {
   activeVaultId: string;
   setActiveVaultId: (id: string) => void;
   activeVault: ClientVault;
-  createVault: (newVault: Omit<ClientVault, "id">) => Promise<ClientVault>;
+  createVault: (newVault: Omit<ClientVault, "id">, opts?: { rules?: VaultRules; salt?: bigint }) => Promise<ClientVault>;
   updateVaultStatus: (vaultId: string, status: VaultStatus) => void;
   submitDeathCertificate: (vaultId: string, docName: string, uploadedBy: string, fileHash?: string) => void;
   verifyDeathCertificate: (vaultId: string, approve: boolean) => void;
