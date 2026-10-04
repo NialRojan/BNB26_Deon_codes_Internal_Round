@@ -32,7 +32,6 @@ export default function AssetOnboarding() {
 
   const cryptoAssets = activeVault.assets.filter((a) => a.category === "Crypto");
   const accessAssets = activeVault.assets.filter((a) => a.category === "Access Kit");
-  const legalAssets = activeVault.assets.filter((a) => a.category === "Legal / Asset Information");
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -61,11 +60,11 @@ export default function AssetOnboarding() {
         </div>
       </div>
 
-      {/* Three Asset Class Behavioral Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* Asset class cards: crypto and passwords */}
+      <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-xl border border-[#b9d79e] bg-[#f8faf4] p-4 text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase font-bold text-[#276332]">Class 1 · Stage 3</span>
+            <span className="text-[10px] uppercase font-bold text-[#276332]">Class 1 · Stage 2</span>
           </div>
           <h4 className="mt-1 font-bold text-[#17221b]">Crypto & Wallets</h4>
           <p className="mt-1 text-[11px] text-[#68756c]">
@@ -78,7 +77,7 @@ export default function AssetOnboarding() {
 
         <div className="rounded-xl border border-[#bae6fd] bg-[#f0f9ff] p-4 text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase font-bold text-[#0369a1]">Class 2 · Stage 2</span>
+            <span className="text-[10px] uppercase font-bold text-[#0369a1]">Class 2 · Stage 1</span>
           </div>
           <h4 className="mt-1 font-bold text-[#17221b]">Access Kit & Passwords</h4>
           <p className="mt-1 text-[11px] text-[#68756c]">
@@ -89,18 +88,6 @@ export default function AssetOnboarding() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-[#fde3a7] bg-[#fffbf0] p-4 text-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase font-bold text-[#9a6700]">Class 3 · Stage 1</span>
-          </div>
-          <h4 className="mt-1 font-bold text-[#17221b]">Legal & Bank Dossier</h4>
-          <p className="mt-1 text-[11px] text-[#68756c]">
-            <b>Released first to executor</b>. Bank folios, demat accounts, deeds. Holds no passwords, guides legal probate claims.
-          </p>
-          <div className="mt-3 font-semibold text-[#9a6700]">
-            {legalAssets.length} accounts recorded
-          </div>
-        </div>
       </div>
 
       {/* Add Asset Form */}
@@ -122,7 +109,6 @@ export default function AssetOnboarding() {
             >
               <option value="Crypto">Crypto (ETH, BTC, Tokens, NFTs)</option>
               <option value="Access Kit">Access Kit (Password Manager, Cloud Recovery)</option>
-              <option value="Legal / Asset Information">Legal / Asset Information (Bank, Demat, Insurance)</option>
             </select>
           </div>
 

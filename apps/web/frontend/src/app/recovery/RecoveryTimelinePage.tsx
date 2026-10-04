@@ -100,11 +100,11 @@ export function buildRecoveryStages(vault: ClientVault, firmName: string): Timel
       id: "s6",
       number: "06",
       title: "Staged Release",
-      subtitle: "Sequential asset unlocking (Legal → Access → Crypto)",
+      subtitle: "Sequential asset unlocking (Passwords → Crypto)",
       status: vault.status === "EXECUTED" ? "active" : "pending",
       detail:
         vault.status === "EXECUTED"
-          ? "Stage 1 (Legal) Released · Stage 2 (Access) Unlocking in 4d · Stage 3 (Crypto) Timelocked"
+          ? "Stage 1 (Passwords) Released · Stage 2 (Crypto) Timelocked"
           : "Sequential timelocks activate upon will execution",
       timeInfo: vault.status === "EXECUTED" ? "In Progress" : "Locked",
     },

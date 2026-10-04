@@ -14,7 +14,6 @@ export default function ClientVaultDashboard() {
 
   const cryptoAssets = activeVault.assets.filter((a) => a.category === "Crypto");
   const accessAssets = activeVault.assets.filter((a) => a.category === "Access Kit");
-  const legalAssets = activeVault.assets.filter((a) => a.category === "Legal / Asset Information");
 
   const handleConfirmCancelRecovery = () => {
     cancelRecovery(activeVault.id);
@@ -79,24 +78,6 @@ export default function ClientVaultDashboard() {
               <span className="h-2 w-2 rounded-full bg-[#a3e635]" />
               {activeVault.status}
             </span>
-            <Link
-              to="/client/deposit"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#a3e635] px-3.5 py-1.5 text-xs font-bold text-[#17221b] hover:brightness-95"
-            >
-              + Deposit Crypto
-            </Link>
-            <Link
-              to="/client/seal"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-white/20"
-            >
-              Seal Secret
-            </Link>
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-white/20"
-            >
-              Edit Rules
-            </button>
           </div>
         </div>
         <div className="welcome-art" aria-hidden="true" style={{ opacity: 0.5 }}>
@@ -180,10 +161,6 @@ export default function ClientVaultDashboard() {
               <span>Sealed Passwords & Shards:</span>
               <b className="font-bold text-[#17221b]">{accessAssets.length} items</b>
             </div>
-            <div className="flex justify-between items-center">
-              <span>Legal Probate Folios:</span>
-              <b className="font-bold text-[#17221b]">{legalAssets.length} items</b>
-            </div>
           </div>
           <div className="pt-1">
             <Link
@@ -205,27 +182,13 @@ export default function ClientVaultDashboard() {
               Organized by release stage. Released sequentially only upon verified executor trigger.
             </p>
           </div>
-          <div className="flex gap-2">
-            <Link
-              to="/client/deposit"
-              className="rounded-lg bg-[#a3e635] px-3 py-1.5 text-xs font-bold text-[#17221b] hover:brightness-95"
-            >
-              + Deposit Crypto
-            </Link>
-            <Link
-              to="/client/seal"
-              className="rounded-lg bg-[#17221b] px-3 py-1.5 text-xs font-bold text-white hover:bg-black"
-            >
-              Seal Secret
-            </Link>
-          </div>
         </div>
 
         {/* Category 1: Crypto */}
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="font-bold text-xs uppercase text-[#276332]">Class 1 · Crypto & Digital Assets</span>
-            <span className="text-[10px] text-[#718077]">(Stage 3 — Unlocks Last)</span>
+            <span className="text-[10px] text-[#718077]">(Stage 2 — Released last)</span>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {cryptoAssets.map((asset) => (
@@ -249,7 +212,7 @@ export default function ClientVaultDashboard() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="font-bold text-xs uppercase text-[#0369a1]">Class 2 · Access Kit & Password Shards</span>
-            <span className="text-[10px] text-[#718077]">(Stage 2 — Timelocked)</span>
+            <span className="text-[10px] text-[#718077]">(Stage 1 — Released first)</span>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {accessAssets.map((asset) => (
@@ -264,24 +227,20 @@ export default function ClientVaultDashboard() {
           </div>
         </div>
 
-        {/* Category 3: Legal Information */}
+      </div>
+
+      {/* Edit rules: an option at the bottom of the dashboard */}
+      <div className="flex flex-col gap-3 rounded-xl border border-[#e1e8e1] bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="font-bold text-xs uppercase text-[#9a6700]">Class 3 · Legal Folios & Bank Dossier</span>
-            <span className="text-[10px] text-[#718077]">(Stage 1 — Released to Executor)</span>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {legalAssets.map((asset) => (
-              <div key={asset.id} className="rounded-lg border border-[#e1e8e1] p-3 text-xs bg-[#fafbfa]">
-                <div className="flex justify-between font-bold text-[#17221b]">
-                  <span>{asset.name}</span>
-                  {asset.institution && <span className="text-[10px] text-[#718077]">{asset.institution}</span>}
-                </div>
-                <p className="mt-1 text-[11px] text-[#68756c]">{asset.detail}</p>
-              </div>
-            ))}
-          </div>
+          <h3 className="text-sm font-bold text-[#17221b]">Inheritance rules</h3>
+          <p className="text-xs text-[#718077]">Change how your crypto and sealed passwords are passed on. Only you can edit these.</p>
         </div>
+        <button
+          onClick={() => setShowEditModal(true)}
+          className="rounded-lg border border-[#cfe3b8] bg-[#f8faf4] px-4 py-2 text-xs font-bold text-[#315c3d] hover:bg-[#eef6e4]"
+        >
+          Edit rules
+        </button>
       </div>
 
       {/* Edit Rules Modal */}

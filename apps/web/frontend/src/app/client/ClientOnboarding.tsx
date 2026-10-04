@@ -122,7 +122,7 @@ export default function ClientOnboarding() {
             <div>
               <b className="text-sm text-[#17221b]">{targetVault.executor}</b>
               <p className="text-[11px] text-[#68756c]">
-                Fiduciary executor responsible for processing death certificate verification, executing the digital will, and releasing legal claims to banks.
+                Fiduciary executor responsible for processing death certificate verification, and executing the digital will so your sealed passwords and crypto reach your heirs.
               </p>
             </div>
             <span className="text-xs font-bold text-[#276332]">Authorized ✓</span>

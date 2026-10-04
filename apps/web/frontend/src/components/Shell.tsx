@@ -44,7 +44,6 @@ const lawyerLinks = [
 
 const clientLinks = [
   ["/client/vault", "My Vault Dashboard", ""],
-  ["/client/onboarding", "Onboarding Review", ""],
   ["/client/assets", "Asset Classification", ""],
   ["/client/deposit", "Deposit Crypto", ""],
   ["/client/seal", "Seal Secret Browser-Side", ""],
