@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useB2B2C } from "../../lib/b2b2cStore";
 import AuditHealthBanner from "../../components/AuditHealthBanner";
+import { buildRecoveryStages, RecoveryStepper } from "../recovery/RecoveryTimelinePage";
 import type { VaultStatus, ClientVault } from "../../data/mockData";
 
 const statusColors: Record<VaultStatus, { bg: string; text: string; dot: string; border: string }> = {
@@ -337,6 +338,11 @@ export default function LawFirmDashboard() {
                   <span className="text-[10px] text-[#6b786e]">Veto Window</span>
                   <div className="font-bold text-[#17221b] mt-0.5">{selectedVault.vetoHours} hours</div>
                 </div>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-[#17221b] mb-1.5">Recovery status</h4>
+                <RecoveryStepper stages={buildRecoveryStages(vaults.find((v) => v.id === selectedVault.id) ?? selectedVault, lawFirm.name)} />
               </div>
 
               <div>

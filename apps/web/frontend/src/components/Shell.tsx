@@ -40,7 +40,6 @@ const lawyerLinks = [
   ["/lawyer/create", "Create Client Vault", ""],
   ["/lawyer/verification", "Document Verification", ""],
   ["/lawyer/execute", "Execute Digital Will", ""],
-  ["/recovery", "Recovery Status Timeline", ""],
 ];
 
 const clientLinks = [

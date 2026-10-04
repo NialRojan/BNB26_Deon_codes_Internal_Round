@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useB2B2C } from "../../lib/b2b2cStore";
+import type { ClientVault } from "../../data/mockData";
 
 interface TimelineStage {
   id: string;
@@ -12,16 +13,9 @@ interface TimelineStage {
   timeInfo?: string;
 }
 
-export default function RecoveryTimelinePage() {
-  const { vaults, activeVault, cancelRecovery, setActiveVaultId } = useB2B2C();
-  const [showVetoConfirm, setShowVetoConfirm] = useState(false);
-  const [selectedVaultId, setSelectedVaultId] = useState(activeVault.id);
-
-  const vault = vaults.find((v) => v.id === selectedVaultId) || activeVault;
-  const isVetoActive = vault.status === "VETO WINDOW" || vault.status === "RECOVERY PENDING";
-
-  // Build timeline stages based on vault status
-  const stages: TimelineStage[] = [
+/** Recovery milestones for one vault (shared by this page and the lawyer's Inspect pop-up). */
+export function buildRecoveryStages(vault: ClientVault, firmName: string): TimelineStage[] {
+  return [
     {
       id: "s1",
       number: "01",
@@ -77,11 +71,11 @@ export default function RecoveryTimelinePage() {
           : "pending",
       detail:
         vault.status === "VETO WINDOW"
-          ? `Owner safety window active (${vault.vetoTimeRemainingHours || 19}h remaining). Client retains 1-click cancellation.`
+          ? `Owner safety window active (${(vault.vetoTimeRemainingHours ?? 0).toFixed(1)}h remaining). Client retains 1-click cancellation.`
           : vault.status === "READY FOR EXECUTION" || vault.status === "EXECUTED"
           ? "Veto window safely elapsed without client cancellation"
           : `Will activate for ${vault.vetoHours}h once attestations and evidence are verified`,
-      timeInfo: vault.status === "VETO WINDOW" ? `${vault.vetoTimeRemainingHours || 19}h Left` : undefined,
+      timeInfo: vault.status === "VETO WINDOW" ? `${(vault.vetoTimeRemainingHours ?? 0).toFixed(1)}h left` : undefined,
     },
     {
       id: "s5",
@@ -98,7 +92,7 @@ export default function RecoveryTimelinePage() {
         vault.status === "READY FOR EXECUTION"
           ? "All conditions satisfied. Law firm can trigger digital will execution."
           : vault.status === "EXECUTED"
-          ? "Digital will executed by Mehta & Partners"
+          ? `Digital will executed by ${firmName}`
           : "Locked until prior gates complete",
       timeInfo: vault.status === "READY FOR EXECUTION" ? "Ready Now" : undefined,
     },
@@ -115,6 +109,79 @@ export default function RecoveryTimelinePage() {
       timeInfo: vault.status === "EXECUTED" ? "In Progress" : "Locked",
     },
   ];
+}
+
+/** Vertical milestone stepper. */
+export function RecoveryStepper({ stages }: { stages: TimelineStage[] }) {
+  return (
+    <div className="relative pl-6 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#e1e8e1]">
+      {stages.map((stg) => {
+        const isDone = stg.status === "completed";
+        const isActive = stg.status === "active";
+        return (
+          <div key={stg.id} className="relative flex items-start gap-4">
+            {/* Milestone Node */}
+            <div
+              className={`absolute -left-6 flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ring-4 ring-white ${
+                isDone
+                  ? "bg-[#34a853] text-white"
+                  : isActive
+                  ? "bg-[#0284c7] text-white animate-pulse"
+                  : "bg-[#e1e8e1] text-[#718077]"
+              }`}
+            >
+              {isDone ? "✓" : isActive ? "●" : "○"}
+            </div>
+
+            {/* Milestone Content */}
+            <div
+              className={`flex-1 rounded-xl border p-4 text-xs transition ${
+                isActive
+                  ? "border-[#bae6fd] bg-[#f0f9ff]"
+                  : isDone
+                  ? "border-[#dcfce7] bg-[#f0fdf4]"
+                  : "border-[#edf0ed] bg-[#fafbfa] opacity-75"
+              }`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-[#718077]">
+                    Stage {stg.number} · {stg.subtitle}
+                  </span>
+                  <h4 className="font-bold text-sm text-[#17221b] mt-0.5">{stg.title}</h4>
+                </div>
+                {stg.timeInfo && (
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                      isDone
+                        ? "bg-[#dcfce7] text-[#166534]"
+                        : isActive
+                        ? "bg-[#e0f2fe] text-[#0369a1]"
+                        : "bg-[#f1f5f9] text-[#475569]"
+                    }`}
+                  >
+                    {stg.timeInfo}
+                  </span>
+                )}
+              </div>
+              <p className="mt-1.5 text-[11px] text-[#4b5563] leading-relaxed">{stg.detail}</p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function RecoveryTimelinePage() {
+  const { vaults, activeVault, cancelRecovery, setActiveVaultId, lawFirm } = useB2B2C();
+  const [showVetoConfirm, setShowVetoConfirm] = useState(false);
+  const [selectedVaultId, setSelectedVaultId] = useState(activeVault.id);
+
+  const vault = vaults.find((v) => v.id === selectedVaultId) || activeVault;
+  const isVetoActive = vault.status === "VETO WINDOW" || vault.status === "RECOVERY PENDING";
+
+  const stages = buildRecoveryStages(vault, lawFirm.name);
 
   const handleCancelRecovery = () => {
     cancelRecovery(vault.id);
@@ -216,62 +283,7 @@ export default function RecoveryTimelinePage() {
           </p>
         </div>
 
-        <div className="relative pl-6 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#e1e8e1]">
-          {stages.map((stg) => {
-            const isDone = stg.status === "completed";
-            const isActive = stg.status === "active";
-            return (
-              <div key={stg.id} className="relative flex items-start gap-4">
-                {/* Milestone Node */}
-                <div
-                  className={`absolute -left-6 flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ring-4 ring-white ${
-                    isDone
-                      ? "bg-[#34a853] text-white"
-                      : isActive
-                      ? "bg-[#0284c7] text-white animate-pulse"
-                      : "bg-[#e1e8e1] text-[#718077]"
-                  }`}
-                >
-                  {isDone ? "✓" : isActive ? "●" : "○"}
-                </div>
-
-                {/* Milestone Content */}
-                <div
-                  className={`flex-1 rounded-xl border p-4 text-xs transition ${
-                    isActive
-                      ? "border-[#bae6fd] bg-[#f0f9ff]"
-                      : isDone
-                      ? "border-[#dcfce7] bg-[#f0fdf4]"
-                      : "border-[#edf0ed] bg-[#fafbfa] opacity-75"
-                  }`}
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <span className="text-[10px] uppercase font-bold text-[#718077]">
-                        Stage {stg.number} · {stg.subtitle}
-                      </span>
-                      <h4 className="font-bold text-sm text-[#17221b] mt-0.5">{stg.title}</h4>
-                    </div>
-                    {stg.timeInfo && (
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                          isDone
-                            ? "bg-[#dcfce7] text-[#166534]"
-                            : isActive
-                            ? "bg-[#e0f2fe] text-[#0369a1]"
-                            : "bg-[#f1f5f9] text-[#475569]"
-                        }`}
-                      >
-                        {stg.timeInfo}
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-1.5 text-[11px] text-[#4b5563] leading-relaxed">{stg.detail}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <RecoveryStepper stages={stages} />
 
         {/* Bottom Context & Direct Portal Links */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf0ed] pt-4 text-xs">

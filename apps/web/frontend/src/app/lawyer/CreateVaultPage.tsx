@@ -5,7 +5,7 @@ import type { HeirItem, GuardianItem, ClientVault } from "../../data/mockData";
 import { useVault } from "../../lib/vault";
 import { emptyRules, type VaultRules } from "../../lib/vaultPlan";
 import SpecialRulesStep from "./wizard/SpecialRulesStep";
-import { AddressPreview, PlanSummary, RequirementsChecklist, WillClause } from "./wizard/WillAndPreview";
+import { AddressPreview, PlanSummary, WillClause } from "./wizard/WillAndPreview";
 
 const STEPS = [
   "1. Client Information",
@@ -267,8 +267,6 @@ export default function CreateVaultPage() {
       ) : (
         /* Wizard Steps */
         <div className="space-y-6">
-          {step === 0 && <RequirementsChecklist />}
-
           {/* Step Progress Pills */}
           <div className="flex flex-wrap gap-1.5 rounded-xl border border-[#e1e8e1] bg-white p-1.5 shadow-sm">
             {STEPS.map((s, idx) => (
