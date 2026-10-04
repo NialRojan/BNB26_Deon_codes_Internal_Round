@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/app_theme.dart';
 import '../../data/demo_store.dart';
 import '../../models/vault_models.dart';
 import '../home/home_screen.dart';
+import '../roles/law_firm_screens.dart';
 import '../more/more_screen.dart';
 import '../people/people_screen.dart';
 import '../roles/role_screens.dart';
@@ -32,6 +32,18 @@ class _MobileShellState extends State<MobileShell> {
   }
 
   List<Widget> _pages(UserRole role) => switch (role) {
+    UserRole.lawyer => [
+      LawFirmOverviewScreen(
+        onNavigate: (value) => setState(() => _index = value),
+        onRoleSelected: _switchRole,
+        isDarkMode: widget.isDarkMode,
+        onDarkModeChanged: widget.onDarkModeChanged,
+        onExitDemo: widget.onExitDemo,
+      ),
+      CreateClientVaultScreen(onContinue: () => setState(() => _index = 2)),
+      const DocumentVerificationScreen(),
+      const ExecuteWillScreen(),
+    ],
     UserRole.owner => [
       OwnerHomeScreen(onSelectTab: (value) => setState(() => _index = value)),
       const VaultScreen(),
@@ -41,6 +53,7 @@ class _MobileShellState extends State<MobileShell> {
         onExitDemo: widget.onExitDemo,
         isDarkMode: widget.isDarkMode,
         onDarkModeChanged: widget.onDarkModeChanged,
+        onSelectTab: (value) => setState(() => _index = value),
       ),
     ],
     UserRole.guardian => [
@@ -82,6 +95,12 @@ class _MobileShellState extends State<MobileShell> {
   };
 
   List<NavigationDestination> _destinations(UserRole role) => switch (role) {
+    UserRole.lawyer => const [
+      NavigationDestination(icon: Icon(Icons.business_outlined), selectedIcon: Icon(Icons.business), label: 'Firm'),
+      NavigationDestination(icon: Icon(Icons.add_box_outlined), selectedIcon: Icon(Icons.add_box), label: 'Create'),
+      NavigationDestination(icon: Icon(Icons.fact_check_outlined), selectedIcon: Icon(Icons.fact_check), label: 'Verify'),
+      NavigationDestination(icon: Icon(Icons.gavel_outlined), selectedIcon: Icon(Icons.gavel), label: 'Execute'),
+    ],
     UserRole.owner => const [
       NavigationDestination(
         icon: Icon(Icons.home_outlined),

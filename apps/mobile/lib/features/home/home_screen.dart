@@ -4,6 +4,7 @@ import '../../app/theme/app_theme.dart';
 import '../../data/demo_store.dart';
 import '../../models/vault_models.dart';
 import '../../shared/widgets.dart';
+import '../client/client_workflow_screens.dart';
 
 class OwnerHomeScreen extends StatelessWidget {
   const OwnerHomeScreen({super.key, required this.onSelectTab});
@@ -42,12 +43,12 @@ class OwnerHomeScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Good evening, Owner',
+                      'Welcome, ${store.clientName}',
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      'Your legacy plan at a glance',
+                      'Your private vault and release plan at a glance',
                       style: TextStyle(color: AppColors.muted, fontSize: 12),
                     ),
                   ],
@@ -58,7 +59,7 @@ class OwnerHomeScreen extends StatelessWidget {
                 tooltip: 'Notifications and more',
                 icon: const Icon(Icons.notifications_none_rounded),
               ),
-              const PersonAvatar(name: 'Owner'),
+              PersonAvatar(name: store.clientName),
             ],
           ),
           const SizedBox(height: 14),
@@ -69,6 +70,52 @@ class OwnerHomeScreen extends StatelessWidget {
             lastCheckIn: store.lastCheckIn,
             nextCheckIn: nextCheckIn,
             onCheckIn: () => _checkIn(context, store),
+          ),
+          if (store.isInterventionAvailable) ...[
+            const SizedBox(height: 10),
+            SurfaceCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const StatusBadge(
+                    label: 'Recovery in progress',
+                    tone: BadgeTone.warning,
+                  ),
+                  const SizedBox(height: 7),
+                  Text(store.recoveryReason, style: const TextStyle(fontSize: 11)),
+                  const SizedBox(height: 9),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.tonal(
+                      onPressed: () async {
+                        final confirmed = await confirmAction(
+                          context,
+                          title: 'Cancel recovery?',
+                          message: 'This resets the local preview to Active. It does not cancel a real recovery request.',
+                          confirmLabel: 'Cancel recovery',
+                          destructive: true,
+                        );
+                        if (confirmed && context.mounted) {
+                          store.cancelDemoRecovery();
+                          showDemoMessage(context, 'Local recovery preview cancelled.');
+                        }
+                      },
+                      child: const Text('I’m safe · cancel recovery'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => ClientPlanReviewScreen(onContinue: () => onSelectTab(1)),
+              ),
+            ),
+            icon: Icon(store.clientPlanConfirmed ? Icons.fact_check : Icons.rate_review_outlined),
+            label: Text(store.clientPlanConfirmed ? 'Review inheritance plan' : 'Review and confirm your plan'),
           ),
           const SizedBox(height: 20),
           const SectionTitle('Your overview'),
@@ -418,17 +465,34 @@ class ReadinessScreen extends StatelessWidget {
         'vault',
       ),
       (
-        'Financial nominees reviewed',
-        'Manual check · confirm directly with each institution.',
+        'You checked in recently',
+        'Check-in interval is ${store.checkInDays} days · last check-in ${relativeTime(store.lastCheckIn)}.',
+        DateTime.now().difference(store.lastCheckIn).inDays <= store.checkInDays,
+        'checkin',
+      ),
+      (
+        'Bank and demat nominees are registered',
+        'Confirm nominee details directly with each institution.',
         store.manualChecks['nominees'] ?? false,
         'nominees',
       ),
       (
-        'Legacy contacts reviewed',
-        'Manual check · verify provider account settings.',
-        store.manualChecks['google'] == true &&
-            store.manualChecks['apple'] == true,
-        'legacy',
+        'Google Inactive Account Manager is set',
+        'Review the trusted contact in your Google account settings.',
+        store.manualChecks['google'] ?? false,
+        'google',
+      ),
+      (
+        'Apple Legacy Contact is set',
+        'Review the legacy contact in your Apple ID settings.',
+        store.manualChecks['apple'] ?? false,
+        'apple',
+      ),
+      (
+        'Duress PIN is configured',
+        'Review the optional decoy vault and alert setup.',
+        store.manualChecks['duressPin'] ?? false,
+        'duressPin',
       ),
       (
         'Emergency contact information',
@@ -506,19 +570,12 @@ class ReadinessScreen extends StatelessWidget {
                             ),
                           ),
                           if (check.$4 == 'nominees' ||
-                              check.$4 == 'legacy' ||
+                              check.$4 == 'google' ||
+                              check.$4 == 'apple' ||
+                              check.$4 == 'duressPin' ||
                               check.$4 == 'emergency')
                             TextButton(
-                              onPressed: () {
-                                if (check.$4 == 'nominees')
-                                  store.toggleCheck('nominees');
-                                if (check.$4 == 'legacy') {
-                                  store.toggleCheck('google');
-                                  store.toggleCheck('apple');
-                                }
-                                if (check.$4 == 'emergency')
-                                  store.toggleCheck('emergency');
-                              },
+                              onPressed: () => store.toggleCheck(check.$4),
                               child: Text(
                                 check.$3
                                     ? 'Review later'

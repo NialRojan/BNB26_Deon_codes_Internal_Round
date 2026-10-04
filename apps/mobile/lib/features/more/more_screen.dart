@@ -4,6 +4,7 @@ import '../../app/theme/app_theme.dart';
 import '../../data/demo_store.dart';
 import '../../models/vault_models.dart';
 import '../../shared/widgets.dart';
+import '../client/client_workflow_screens.dart';
 import '../home/home_screen.dart';
 
 class MoreScreen extends StatelessWidget {
@@ -13,11 +14,13 @@ class MoreScreen extends StatelessWidget {
     required this.onExitDemo,
     required this.isDarkMode,
     required this.onDarkModeChanged,
+    required this.onSelectTab,
   });
   final ValueChanged<UserRole> onRoleSelected;
   final VoidCallback onExitDemo;
   final bool isDarkMode;
   final ValueChanged<bool> onDarkModeChanged;
+  final ValueChanged<int> onSelectTab;
   void _open(BuildContext context, Widget page) =>
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
 
@@ -38,19 +41,19 @@ class MoreScreen extends StatelessWidget {
             padding: const EdgeInsets.all(15),
             child: Row(
               children: [
-                const PersonAvatar(name: 'Owner', size: 46),
+                PersonAvatar(name: store.clientName, size: 46),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Heirloom preview',
+                        '${store.clientName}’s private vault',
                         style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'No account is signed in',
+                        'Client workspace · local demo preview',
                         style: TextStyle(color: AppColors.muted, fontSize: 11),
                       ),
                     ],
@@ -63,6 +66,27 @@ class MoreScreen extends StatelessWidget {
           const SizedBox(height: 19),
           const SectionTitle('Your workspace'),
           const SizedBox(height: 8),
+          _MenuRow(
+            icon: Icons.fact_check_outlined,
+            title: 'Review inheritance plan',
+            detail: 'Confirm people, recovery rules, and release stages',
+            onTap: () => _open(
+              context,
+              ClientPlanReviewScreen(onContinue: () => onSelectTab(1)),
+            ),
+          ),
+          _MenuRow(
+            icon: Icons.account_balance_wallet_outlined,
+            title: 'Deposit crypto',
+            detail: 'Record a local preview deposit',
+            onTap: () => _open(context, const CryptoDepositScreen()),
+          ),
+          _MenuRow(
+            icon: Icons.lock_outline,
+            title: 'Seal a secret',
+            detail: 'Review the protected access flow',
+            onTap: () => _open(context, const SecretSealingScreen()),
+          ),
           _MenuRow(
             icon: Icons.checklist_outlined,
             title: 'Readiness checklist',
@@ -106,6 +130,7 @@ class MoreScreen extends StatelessWidget {
             if (role != store.role)
               _MenuRow(
                 icon: switch (role) {
+                  UserRole.lawyer => Icons.business_outlined,
                   UserRole.owner => Icons.person_outline,
                   UserRole.guardian => Icons.verified_user_outlined,
                   UserRole.beneficiary => Icons.favorite_border,
@@ -292,10 +317,10 @@ class RecoveryStatusScreen extends StatelessWidget {
           const SectionTitle('Release stages'),
           const SizedBox(height: 8),
           for (final stage in [
-            ('Legal claim packet', 'Executor · claim guidance and inventory'),
-            ('Access kit', 'Scoped materials for named recipients'),
-            ('Crypto recovery', 'Additional verification and final delay'),
-          ])
+            ('Legal claim packet', 'Executor · immediate after will execution'),
+            ('Access kit', 'Named recipients · 7-day safety time-lock'),
+            ('Crypto recovery', 'Additional checks · 30-day delay and milestones'),
+          ].indexed)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: SurfaceCard(
@@ -313,7 +338,7 @@ class RecoveryStatusScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            stage.$1,
+                            stage.$2.$1,
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -321,7 +346,7 @@ class RecoveryStatusScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            stage.$2,
+                            stage.$2.$2,
                             style: const TextStyle(
                               color: AppColors.muted,
                               fontSize: 10,
@@ -330,10 +355,35 @@ class RecoveryStatusScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const StatusBadge(label: 'Locked'),
+                    StatusBadge(
+                      label: store.releaseStage >= stage.$1 + 1
+                          ? 'Released'
+                          : store.releaseStage > 0
+                          ? 'Timelocked'
+                          : 'Locked',
+                      tone: store.releaseStage >= stage.$1 + 1
+                          ? BadgeTone.good
+                          : store.releaseStage > 0
+                          ? BadgeTone.warning
+                          : BadgeTone.neutral,
+                    ),
                   ],
                 ),
               ),
+            ),
+          if (store.releaseStage > 0 && store.releaseStage < 3)
+            FilledButton.icon(
+              onPressed: () async {
+                final confirmed = await confirmAction(
+                  context,
+                  title: 'Advance the demo time-lock?',
+                  message: 'This advances the local example to Stage ${store.releaseStage + 1}. Real stages require their full checks and waiting periods.',
+                  confirmLabel: 'Advance preview',
+                );
+                if (confirmed && context.mounted) store.advanceReleaseStage();
+              },
+              icon: const Icon(Icons.lock_clock_outlined),
+              label: Text('Preview Stage ${store.releaseStage + 1}'),
             ),
           const SizedBox(height: 14),
           const SectionTitle('Scenario preview'),
@@ -679,17 +729,17 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 15),
           const SectionTitle('Profile'),
           const SizedBox(height: 8),
-          const SurfaceCard(
+          SurfaceCard(
             child: Row(
               children: [
-                PersonAvatar(name: 'Owner'),
-                SizedBox(width: 12),
+                PersonAvatar(name: store.clientName),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Owner profile',
+                        '${store.clientName} · Client',
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       Text(

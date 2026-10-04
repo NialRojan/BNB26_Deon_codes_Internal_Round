@@ -119,7 +119,7 @@ class WelcomeScreen extends StatelessWidget {
                   child: FilledButton.icon(
                     onPressed: () => onContinue(UserRole.owner),
                     icon: const Icon(Icons.arrow_forward),
-                    label: const Text('Explore the owner demo'),
+                    label: const Text('Open client vault preview'),
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -136,6 +136,7 @@ class WelcomeScreen extends StatelessWidget {
                   runSpacing: 8,
                   children: [
                     for (final role in [
+                      UserRole.lawyer,
                       UserRole.guardian,
                       UserRole.beneficiary,
                       UserRole.executor,
