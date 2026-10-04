@@ -15,9 +15,9 @@ export const deployments = {
     factory: "0x2f1E33Fd68E5a22Eb9cea78383356849F6445807",
     vaultImplementation: "0x89415eE4B3bbd76a9e7E88647F709F55404C0b37",
     /** v2 pitch/demo vault. Filled in after creation. */
-    demoVault: "0x0000000000000000000000000000000000000000",
+    demoVault: "0x43CfaE0d89b26A6dBB235Df788F8f030Ea239EA8",
     /** v2 rehearsal vault. Filled in after creation. */
-    rehearsalVault: "0x0000000000000000000000000000000000000000",
+    rehearsalVault: "0x3bBebae98284897529a8C939FdC5D9bb12303714",
     /** Tamper-evidence anchor for the backend audit log. */
     auditAnchor: "0x13842d3635883c55045c8EF37e0DcBdb2485ae36",
     /** Superseded v1 contracts (single default split), kept for the record. */

@@ -14,7 +14,7 @@ const envSchema = z.object({
   HEARTBEAT_SWEEP_INTERVAL_MS: z.coerce.number().default(60000),
   // On-chain integration (Member 2 HeirloomVault on Sepolia)
   RPC_URL: z.string().default("https://ethereum-sepolia-rpc.publicnode.com"),
-  VAULT_CONTRACT_ADDRESS: z.string().default("0x8085f0EF193B9dD3F7501394bD3d054c045aB575"),
+  VAULT_CONTRACT_ADDRESS: z.string().default("0x43CfaE0d89b26A6dBB235Df788F8f030Ea239EA8"),
   CHAIN_WATCHER_ENABLED: z
     .enum(["true", "false"])
     .default("true")
