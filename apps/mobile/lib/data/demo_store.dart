@@ -1,9 +1,16 @@
 import 'package:flutter/widgets.dart';
 
 import '../models/vault_models.dart';
+import 'vault_repository.dart';
 
 class DemoStore extends ChangeNotifier {
+<<<<<<< Updated upstream
   UserRole role = UserRole.owner;
+=======
+  UserRole role = UserRole.client;
+  String clientName = 'Rahul Sharma';
+  String clientEmail = 'rahul.sharma@legacyclient.com';
+>>>>>>> Stashed changes
   VaultStatus status = VaultStatus.active;
   DateTime lastCheckIn = DateTime.now().subtract(const Duration(hours: 2));
   int guardianThreshold = 3;
@@ -73,6 +80,7 @@ class DemoStore extends ChangeNotifier {
   final List<VaultPerson> beneficiaries = [
     VaultPerson(
       id: 'b-1',
+<<<<<<< Updated upstream
       name: 'Sana Khan',
       contact: 'sana@example.com',
       role: UserRole.executor,
@@ -88,6 +96,30 @@ class DemoStore extends ChangeNotifier {
       name: 'Vikram Rao',
       contact: 'vikram@example.com',
       role: UserRole.beneficiary,
+=======
+      name: 'Mehta & Partners',
+      contact: 'trusts@mehtapartners.com',
+      role: UserRole.heir,
+      isExecutor: true,
+    ),
+    VaultPerson(
+      id: 'b-2',
+      name: 'Asha Sharma',
+      contact: 'asha.s@gmail.com',
+      role: UserRole.heir,
+    ),
+    VaultPerson(
+      id: 'b-3',
+      name: 'Arjun Sharma',
+      contact: 'arjun.s@gmail.com',
+      role: UserRole.heir,
+    ),
+    VaultPerson(
+      id: 'b-4',
+      name: 'Diya Sharma',
+      contact: 'diya.s@gmail.com',
+      role: UserRole.heir,
+>>>>>>> Stashed changes
     ),
   ];
   final Map<String, bool> manualChecks = {
@@ -118,14 +150,92 @@ class DemoStore extends ChangeNotifier {
   int get readyChecks =>
       manualChecks.values.where((value) => value).length +
       (guardians.length >= guardianThreshold ? 1 : 0) +
-      (beneficiaries.any((person) => person.role == UserRole.executor)
-          ? 1
-          : 0) +
+      (beneficiaries.any((person) => person.isExecutor) ? 1 : 0) +
       (assets.isNotEmpty ? 1 : 0);
   int get totalChecks => manualChecks.length + 3;
   bool get isInterventionAvailable =>
       status == VaultStatus.triggerPending || status == VaultStatus.vetoWindow;
 
+<<<<<<< Updated upstream
+=======
+  void updateClientProfile({required String name, required String email}) {
+    clientName = name;
+    clientEmail = email;
+    activity.insert(
+      0,
+      ActivityRecord('Client vault prepared for $name', DateTime.now()),
+    );
+    notifyListeners();
+  }
+
+  void submitDeathCertificate(String fileName) {
+    deathCertificateStatus = 'Pending';
+    recoveryPending = true;
+    if (status == VaultStatus.active || status == VaultStatus.watch) {
+      status = VaultStatus.triggerPending;
+    }
+    activity.insert(
+      0,
+      ActivityRecord(
+        'Death certificate recorded for review: $fileName',
+        DateTime.now(),
+        warning: true,
+      ),
+    );
+    notifyListeners();
+  }
+
+  void verifyDeathCertificate({required bool approved}) {
+    deathCertificateStatus = approved ? 'Verified' : 'Rejected';
+    if (approved && guardianApprovals >= guardianThreshold) {
+      status = VaultStatus.vetoWindow;
+      recoveryPending = true;
+    }
+    activity.insert(
+      0,
+      ActivityRecord(
+        'Law firm ${approved ? 'verified' : 'rejected'} the demo document',
+        DateTime.now(),
+        warning: !approved,
+      ),
+    );
+    notifyListeners();
+  }
+
+  void executeDemoWill() {
+    if (deathCertificateStatus != 'Verified' ||
+        guardianApprovals < guardianThreshold)
+      return;
+    releaseStage = 1;
+    status = VaultStatus.stagedRelease;
+    recoveryReason = 'Digital will execution previewed locally. Stage 1 legal guidance is available; later stages remain locked.';
+    activity.insert(
+      0,
+      ActivityRecord(
+        'Digital will execution previewed · Stage 1 opened',
+        DateTime.now(),
+      ),
+    );
+    notifyListeners();
+  }
+
+  void advanceReleaseStage() {
+    if (releaseStage < 1 || releaseStage >= 3) return;
+    releaseStage++;
+    if (releaseStage == 3) {
+      status = VaultStatus.completed;
+    }
+    activity.insert(
+      0,
+      ActivityRecord(
+        'Demo release advanced to Stage $releaseStage',
+        DateTime.now(),
+      ),
+    );
+    notifyListeners();
+  }
+
+>>>>>>> Stashed changes
   void recordDemoCheckIn() {
     lastCheckIn = DateTime.now();
     if (status == VaultStatus.watch) status = VaultStatus.active;
@@ -154,6 +264,35 @@ class DemoStore extends ChangeNotifier {
     notifyListeners();
   }
 
+<<<<<<< Updated upstream
+=======
+  void confirmClientPlan() {
+    clientPlanConfirmed = true;
+    activity.insert(
+      0,
+      ActivityRecord(
+        'Client reviewed the inheritance plan locally',
+        DateTime.now(),
+      ),
+    );
+    notifyListeners();
+  }
+
+  void setAssetRule(String assetId, String rule) {
+    final index = assets.indexWhere((asset) => asset.id == assetId);
+    if (index < 0) return;
+    assets[index].customRule = rule;
+    activity.insert(
+      0,
+      ActivityRecord(
+        'Release rule updated for ${assets[index].name}',
+        DateTime.now(),
+      ),
+    );
+    notifyListeners();
+  }
+
+>>>>>>> Stashed changes
   void removeAsset(String id) {
     assets.removeWhere((asset) => asset.id == id);
     notifyListeners();
@@ -225,6 +364,20 @@ class DemoStore extends ChangeNotifier {
 
   void setGuardianDecision(String requestId, String decision) {
     guardianDecisions[requestId] = decision;
+<<<<<<< Updated upstream
+=======
+    if (decision == 'Approve') {
+      guardianApprovals = (guardianApprovals + 1)
+          .clamp(0, guardians.length)
+          .toInt();
+      if (guardianApprovals >= guardianThreshold &&
+          deathCertificateStatus == 'Verified') {
+        status = VaultStatus.vetoWindow;
+      } else if (guardianApprovals >= guardianThreshold) {
+        status = VaultStatus.triggerPending;
+      }
+    }
+>>>>>>> Stashed changes
     activity.insert(
       0,
       ActivityRecord(
@@ -251,13 +404,110 @@ class DemoStore extends ChangeNotifier {
   }
 }
 
-class StoreScope extends InheritedNotifier<DemoStore> {
-  const StoreScope({super.key, required DemoStore store, required super.child})
-    : super(notifier: store);
+class DemoVaultRepository extends ChangeNotifier implements VaultRepository {
+  DemoVaultRepository(this.store) {
+    store.addListener(notifyListeners);
+  }
+
+  final DemoStore store;
+
+  @override
+  bool get isDemo => true;
+
+  @override
+  Future<List<VaultSummary>> discoverVaults(String walletAddress) async =>
+      const [];
+
+  @override
+  Future<VaultSnapshot> readVault(String vaultAddress) async => VaultSnapshot(
+    address: vaultAddress,
+    state: store.status,
+    lastHeartbeat: store.lastCheckIn,
+    inactivityThresholdSeconds: store.checkInDays * Duration.secondsPerDay,
+    vetoEndTime: null,
+    ethBalanceWei: BigInt.zero,
+    owner: 'demo-client',
+    executor:
+        store.beneficiaries
+            .where((person) => person.isExecutor)
+            .firstOrNull
+            ?.id ??
+        '',
+    guardians: store.guardians.map((person) => person.id).toList(),
+    requiredSignatures: store.guardianThreshold,
+    currentSignatures: store.guardianApprovals,
+    defaultAllocations: const [],
+    isExecuted: store.releaseStage > 0,
+  );
+
+  @override
+  Future<String> pingHeartbeat(String vaultAddress) async {
+    store.recordDemoCheckIn();
+    return 'demo-local';
+  }
+
+  @override
+  Future<String> vetoRecovery(String vaultAddress) async {
+    store.cancelDemoRecovery();
+    return 'demo-local';
+  }
+
+  @override
+  Future<String> attestGuardian(String vaultAddress) async {
+    store.setGuardianDecision('demo-request-1', 'Approve');
+    return 'demo-local';
+  }
+
+  @override
+  Future<String> depositEth(String vaultAddress, BigInt wei) async =>
+      'demo-local';
+
+  @override
+  Future<BigInt> claimEth(String vaultAddress, String heirAddress) async =>
+      BigInt.zero;
+
+  @override
+  void dispose() {
+    store.removeListener(notifyListeners);
+    super.dispose();
+  }
+}
+
+class StoreScope extends InheritedNotifier<VaultRepository> {
+  factory StoreScope({
+    Key? key,
+    required DemoStore store,
+    required Widget child,
+    VaultRepository? repository,
+  }) {
+    final selected = repository ?? DemoVaultRepository(store);
+    return StoreScope._(
+      key: key,
+      demoStore: store,
+      repository: selected,
+      child: child,
+    );
+  }
+
+  StoreScope._({
+    super.key,
+    required this.demoStore,
+    required this.repository,
+    required super.child,
+  }) : super(notifier: repository);
+
+  final DemoStore demoStore;
+  final VaultRepository repository;
 
   static DemoStore of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<StoreScope>();
     assert(scope != null, 'StoreScope is missing above this context');
-    return scope!.notifier!;
+    return scope!.demoStore;
+  }
+
+  static VaultRepository repositoryOf(BuildContext context) {
+    final scope = context.dependOnInheritedWidgetOfExactType<StoreScope>();
+    assert(scope != null, 'StoreScope is missing above this context');
+    return scope!.repository;
   }
 }

@@ -1,18 +1,27 @@
 # Heirloom Mobile
 
-Flutter companion app for the Heirloom web experience. Android and iOS project scaffolding is included.
+Flutter client for the Heirloom protocol. Mobile account roles are Client, Guardian, and Heir. Executor assignment and law-firm administration remain part of the web client.
 
-## Run
+## Demo mode
+
+Run without protocol configuration:
 
 ```sh
 flutter pub get
 flutter run
 ```
 
-## Current demo scope
+Demo mode keeps the local sample vault and labels actions as local previews.
 
-The app is an in-memory product demo. It provides role-focused owner, guardian, beneficiary, and executor navigation; owner assets, people, readiness and recovery previews; local check-in and attestation examples; notifications, activity, and settings screens.
+## Live configuration
 
-No backend exists in this repository yet. The demo does not authenticate users, send invitations, submit check-ins or attestations, authorize recovery, reveal protected materials, or persist changes across restarts. Demo actions are labeled in the UI. Do not enter seed phrases, passwords, PINs, OTPs, or recovery codes.
+Copy `.env.example` as a reference and provide the values as Dart defines. Flutter does not load `.env` files automatically. For the Android emulator, the API host usually maps to `10.0.2.2`; for a USB-connected phone, use `adb reverse tcp:4000 tcp:4000` and `http://localhost:4000/api/v1`.
 
-Before production use, connect typed clients to the implemented backend contracts, add authenticated role authorization, secure session storage, server-confirmed sensitive actions, push delivery, and platform build/signing configuration.
+```sh
+flutter run \
+  --dart-define=API_URL=http://10.0.2.2:4000/api/v1 \
+  --dart-define=SEPOLIA_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com \
+  --dart-define=WC_PROJECT_ID=YOUR_REOWN_PROJECT_ID
+```
+
+Live mode must validate these values before initializing wallet, API, or chain services. Sepolia chain ID is `11155111`.

@@ -163,6 +163,159 @@ class _VaultScreenState extends State<VaultScreen> {
     showDemoMessage(context, 'Asset updated in local demo state only.');
   }
 
+<<<<<<< Updated upstream
+=======
+  Future<void> _customizeRule(BuildContext context, VaultAsset asset) async {
+    final store = StoreScope.of(context);
+    const strategies = [
+      'Custom beneficiary split',
+      'Distribute equally to all beneficiaries',
+      'Staged payouts',
+      'Assign to one beneficiary',
+    ];
+    var strategy = strategies.first;
+    var recipient = store.beneficiaries
+        .firstWhere(
+          (person) => person.name == asset.recipient,
+          orElse: () => store.beneficiaries.first,
+        )
+        .name;
+    final percent = TextEditingController(text: '100');
+    final milestone = TextEditingController(
+      text: 'After required recovery checks',
+    );
+    final interval = TextEditingController(text: 'Every year');
+    final saved = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Per-asset release rule'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  asset.name,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: strategy,
+                  decoration: const InputDecoration(labelText: 'Distribution'),
+                  items: strategies
+                      .map(
+                        (value) =>
+                            DropdownMenuItem(value: value, child: Text(value)),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) setDialogState(() => strategy = value);
+                  },
+                ),
+                if (strategy == strategies.first) ...[
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    initialValue: recipient,
+                    decoration: const InputDecoration(labelText: 'Beneficiary'),
+                    items: store.beneficiaries
+                        .map(
+                          (person) => DropdownMenuItem(
+                            value: person.name,
+                            child: Text(person.name),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null)
+                        setDialogState(() => recipient = value);
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: percent,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Share (%)'),
+                  ),
+                ],
+                if (strategy == strategies.last) ...[
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    initialValue: recipient,
+                    decoration: const InputDecoration(
+                      labelText: 'Single beneficiary',
+                    ),
+                    items: store.beneficiaries
+                        .map(
+                          (person) => DropdownMenuItem(
+                            value: person.name,
+                            child: Text(person.name),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null)
+                        setDialogState(() => recipient = value);
+                    },
+                  ),
+                ],
+                if (strategy == strategies[2]) ...[
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: interval,
+                    decoration: const InputDecoration(
+                      labelText: 'Payout interval',
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 10),
+                TextField(
+                  controller: milestone,
+                  decoration: const InputDecoration(
+                    labelText: 'Milestone / unlock condition',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Rules are saved to this local preview. No wallet signature or contract update is created.',
+                  style: TextStyle(color: AppColors.muted, fontSize: 10),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final rule = switch (strategy) {
+                  'Custom beneficiary split' =>
+                    '$recipient · ${percent.text.trim()}% · ${milestone.text.trim()}',
+                  'Distribute equally to all beneficiaries' =>
+                    'Equal split across all beneficiaries · ${milestone.text.trim()}',
+                  'Staged payouts' =>
+                    'Staged payouts · ${interval.text.trim()} · ${milestone.text.trim()}',
+                  _ => '100% to $recipient · ${milestone.text.trim()}',
+                };
+                Navigator.pop(dialogContext, rule);
+              },
+              child: const Text('Save rule'),
+            ),
+          ],
+        ),
+      ),
+    );
+    percent.dispose();
+    milestone.dispose();
+    interval.dispose();
+    if (saved != null && context.mounted) {
+      store.setAssetRule(asset.id, saved);
+      showDemoMessage(context, 'Release rule saved in the local preview.');
+    }
+  }
+
+>>>>>>> Stashed changes
   @override
   Widget build(BuildContext context) {
     final store = StoreScope.of(context);
@@ -182,15 +335,56 @@ class _VaultScreenState extends State<VaultScreen> {
             title: 'Your vault',
             subtitle:
                 '${store.assets.length} assets · recovery materials stay hidden',
+<<<<<<< Updated upstream
             action: IconButton.filledTonal(
               onPressed: () => _editAsset(context),
               tooltip: 'Add asset',
               icon: const Icon(Icons.add),
+=======
+            action: PopupMenuButton<String>(
+              tooltip: 'Manage assets',
+              icon: const Icon(Icons.add_circle_outline),
+              onSelected: (action) {
+                switch (action) {
+                  case 'asset':
+                    _editAsset(context);
+                    break;
+                  case 'deposit':
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const CryptoDepositScreen(),
+                      ),
+                    );
+                    break;
+                  case 'seal':
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const SecretSealingScreen(),
+                      ),
+                    );
+                    break;
+                }
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(
+                  value: 'asset',
+                  child: Text('Add asset inventory'),
+                ),
+                PopupMenuItem(
+                  value: 'deposit',
+                  child: Text('Record crypto deposit'),
+                ),
+                PopupMenuItem(
+                  value: 'seal',
+                  child: Text('Seal an access secret'),
+                ),
+              ],
+>>>>>>> Stashed changes
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: const DemoBanner(),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18),
+            child: DemoBanner(),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
@@ -337,6 +531,28 @@ class _AssetCard extends StatelessWidget {
             style: const TextStyle(color: AppColors.muted, fontSize: 11),
           ),
           const Divider(height: 19),
+<<<<<<< Updated upstream
+=======
+          if (asset.customRule != null) ...[
+            Text(
+              'Release rule · ${asset.customRule}',
+              style: const TextStyle(fontSize: 10, color: AppColors.success),
+            ),
+            const SizedBox(height: 6),
+          ],
+          Text(
+            switch (asset.category) {
+              AssetCategory.financial => 'Stage 1 · Legal claim packet',
+              AssetCategory.access => 'Stage 2 · Time-locked access kit',
+              AssetCategory.crypto => 'Stage 3 · Additional checks and delay',
+            },
+            style: const TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              color: AppColors.muted,
+            ),
+          ),
+>>>>>>> Stashed changes
           Row(
             children: [
               const Icon(

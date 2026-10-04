@@ -70,6 +70,70 @@ class OwnerHomeScreen extends StatelessWidget {
             nextCheckIn: nextCheckIn,
             onCheckIn: () => _checkIn(context, store),
           ),
+<<<<<<< Updated upstream
+=======
+          if (store.isInterventionAvailable) ...[
+            const SizedBox(height: 10),
+            SurfaceCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const StatusBadge(
+                    label: 'Recovery in progress',
+                    tone: BadgeTone.warning,
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    store.recoveryReason,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  const SizedBox(height: 9),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.tonal(
+                      onPressed: () async {
+                        final confirmed = await confirmAction(
+                          context,
+                          title: 'Cancel recovery?',
+                          message: 'This resets the local preview to Active. It does not cancel a real recovery request.',
+                          confirmLabel: 'Cancel recovery',
+                          destructive: true,
+                        );
+                        if (confirmed && context.mounted) {
+                          store.cancelDemoRecovery();
+                          showDemoMessage(
+                            context,
+                            'Local recovery preview cancelled.',
+                          );
+                        }
+                      },
+                      child: const Text('I’m safe · cancel recovery'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) =>
+                    ClientPlanReviewScreen(onContinue: () => onSelectTab(1)),
+              ),
+            ),
+            icon: Icon(
+              store.clientPlanConfirmed
+                  ? Icons.fact_check
+                  : Icons.rate_review_outlined,
+            ),
+            label: Text(
+              store.clientPlanConfirmed
+                  ? 'Review inheritance plan'
+                  : 'Review and confirm your plan',
+            ),
+          ),
+>>>>>>> Stashed changes
           const SizedBox(height: 20),
           const SectionTitle('Your overview'),
           const SizedBox(height: 10),
@@ -405,9 +469,9 @@ class ReadinessScreen extends StatelessWidget {
         'people',
       ),
       (
-        'An executor is named',
-        'The executor is assigned to the legal claim stage.',
-        store.beneficiaries.any((person) => person.role == UserRole.executor),
+        'A legal representative is assigned',
+        'The legal representative is assigned to the legal claim stage.',
+        store.beneficiaries.any((person) => person.isExecutor),
         'people',
       ),
       (
@@ -418,8 +482,20 @@ class ReadinessScreen extends StatelessWidget {
         'vault',
       ),
       (
+<<<<<<< Updated upstream
         'Financial nominees reviewed',
         'Manual check · confirm directly with each institution.',
+=======
+        'You checked in recently',
+        'Check-in interval is ${store.checkInDays} days · last check-in ${relativeTime(store.lastCheckIn)}.',
+        DateTime.now().difference(store.lastCheckIn).inDays <=
+            store.checkInDays,
+        'checkin',
+      ),
+      (
+        'Bank and demat nominees are registered',
+        'Confirm nominee details directly with each institution.',
+>>>>>>> Stashed changes
         store.manualChecks['nominees'] ?? false,
         'nominees',
       ),

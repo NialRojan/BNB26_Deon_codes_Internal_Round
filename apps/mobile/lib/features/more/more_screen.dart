@@ -45,6 +45,7 @@ class MoreScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
+<<<<<<< Updated upstream
                         'Heirloom preview',
                         style: TextStyle(fontWeight: FontWeight.w700),
                       ),
@@ -52,6 +53,18 @@ class MoreScreen extends StatelessWidget {
                       Text(
                         'No account is signed in',
                         style: TextStyle(color: AppColors.muted, fontSize: 11),
+=======
+                        '${store.clientName}’s private vault',
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Client workspace · local demo preview',
+                        style: const TextStyle(
+                          color: AppColors.muted,
+                          fontSize: 11,
+                        ),
+>>>>>>> Stashed changes
                       ),
                     ],
                   ),
@@ -106,10 +119,13 @@ class MoreScreen extends StatelessWidget {
             if (role != store.role)
               _MenuRow(
                 icon: switch (role) {
+<<<<<<< Updated upstream
                   UserRole.owner => Icons.person_outline,
+=======
+                  UserRole.client => Icons.person_outline,
+>>>>>>> Stashed changes
                   UserRole.guardian => Icons.verified_user_outlined,
-                  UserRole.beneficiary => Icons.favorite_border,
-                  UserRole.executor => Icons.assignment_outlined,
+                  UserRole.heir => Icons.favorite_border,
                 },
                 title: 'Switch to ${role.label} demo',
                 detail: 'Changes the local preview role. It does not grant account access.',
@@ -181,7 +197,11 @@ class _MenuRow extends StatelessWidget {
                 color: AppTheme.softSurfaceOf(context),
                 borderRadius: BorderRadius.circular(11),
               ),
-              child: Icon(icon, size: 19, color: Theme.of(context).colorScheme.primary),
+              child: Icon(
+                icon,
+                size: 19,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -292,10 +312,20 @@ class RecoveryStatusScreen extends StatelessWidget {
           const SectionTitle('Release stages'),
           const SizedBox(height: 8),
           for (final stage in [
+<<<<<<< Updated upstream
             ('Legal claim packet', 'Executor · claim guidance and inventory'),
             ('Access kit', 'Scoped materials for named recipients'),
             ('Crypto recovery', 'Additional verification and final delay'),
           ])
+=======
+            ('Legal claim packet', 'Executor · immediate after will execution'),
+            ('Access kit', 'Named recipients · 7-day safety time-lock'),
+            (
+              'Crypto recovery',
+              'Additional checks · 30-day delay and milestones',
+            ),
+          ].indexed)
+>>>>>>> Stashed changes
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: SurfaceCard(
@@ -335,6 +365,24 @@ class RecoveryStatusScreen extends StatelessWidget {
                 ),
               ),
             ),
+<<<<<<< Updated upstream
+=======
+          if (store.releaseStage > 0 && store.releaseStage < 3)
+            FilledButton.icon(
+              onPressed: () async {
+                final confirmed = await confirmAction(
+                  context,
+                  title: 'Advance the demo time-lock?',
+                  message:
+                      'This advances the local example to Stage ${store.releaseStage + 1}. Real stages require their full checks and waiting periods.',
+                  confirmLabel: 'Advance preview',
+                );
+                if (confirmed && context.mounted) store.advanceReleaseStage();
+              },
+              icon: const Icon(Icons.lock_clock_outlined),
+              label: Text('Preview Stage ${store.releaseStage + 1}'),
+            ),
+>>>>>>> Stashed changes
           const SizedBox(height: 14),
           const SectionTitle('Scenario preview'),
           const SizedBox(height: 4),
@@ -404,7 +452,9 @@ class _PhaseRow extends StatelessWidget {
           height: 28,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: current ? AppColors.deepGreen : AppTheme.softSurfaceOf(context),
+            color: current
+                ? AppColors.deepGreen
+                : AppTheme.softSurfaceOf(context),
             borderRadius: BorderRadius.circular(9),
           ),
           child: Text(
@@ -689,12 +739,20 @@ class SettingsScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
+<<<<<<< Updated upstream
                         'Owner profile',
                         style: TextStyle(fontWeight: FontWeight.w600),
+=======
+                        '${store.clientName} · Client',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+>>>>>>> Stashed changes
                       ),
-                      Text(
+                      const Text(
                         'Sample identity · not authenticated',
-                        style: TextStyle(color: AppColors.muted, fontSize: 10),
+                        style: const TextStyle(
+                          color: AppColors.muted,
+                          fontSize: 10,
+                        ),
                       ),
                     ],
                   ),

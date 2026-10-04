@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 enum UserRole { owner, guardian, beneficiary, executor }
+=======
+enum UserRole { client, guardian, heir }
+>>>>>>> Stashed changes
 
 enum VaultStatus {
   active,
@@ -13,10 +17,13 @@ enum AssetCategory { crypto, access, financial }
 
 extension UserRoleLabel on UserRole {
   String get label => switch (this) {
+<<<<<<< Updated upstream
     UserRole.owner => 'Owner',
+=======
+    UserRole.client => 'Client',
+>>>>>>> Stashed changes
     UserRole.guardian => 'Guardian',
-    UserRole.beneficiary => 'Beneficiary',
-    UserRole.executor => 'Executor',
+    UserRole.heir => 'Heir',
   };
 }
 
@@ -63,12 +70,16 @@ class VaultPerson {
     required this.contact,
     required this.role,
     this.verified = false,
+    this.isExecutor = false,
   });
   final String id;
   String name;
   String contact;
   final UserRole role;
   bool verified;
+
+  /// Plan assignment only; the executor is not a mobile account role.
+  bool isExecutor;
 }
 
 class ActivityRecord {

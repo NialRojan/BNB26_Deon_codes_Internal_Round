@@ -161,7 +161,7 @@ class GuardianRequestsScreen extends StatelessWidget {
           const DemoBanner(),
           const SizedBox(height: 14),
           if (store.guardianDecisions.containsKey(_requestId))
-            EmptyState(
+            const EmptyState(
               title: 'No pending requests',
               message: 'Your demo response is recorded locally and has not been submitted.',
             )
@@ -187,15 +187,15 @@ class _GuardianRequestCard extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        const Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 'Recovery request preview',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
               ),
             ),
-            const StatusBadge(label: 'Demo request', tone: BadgeTone.warning),
+            StatusBadge(label: 'Demo request', tone: BadgeTone.warning),
           ],
         ),
         const SizedBox(height: 8),
@@ -250,27 +250,34 @@ class GuardianRequestDetailScreen extends StatelessWidget {
         const DemoBanner(),
         const SizedBox(height: 14),
         const SurfaceCard(
+<<<<<<< Updated upstream
           child: Column(
+=======
+          child: const Column(
+>>>>>>> Stashed changes
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'RECOVERY REQUEST · DEMO',
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.muted,
                   fontSize: 9,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1,
                 ),
               ),
-              SizedBox(height: 9),
-              Text(
+              const SizedBox(height: 9),
+              const Text(
                 'Review a reported unavailability',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-              SizedBox(height: 6),
-              Text(
+              const SizedBox(height: 6),
+              const Text(
                 'You are being asked to independently review the example request and choose whether to attest to the reported circumstances.',
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.muted,
                   fontSize: 11,
                   height: 1.5,
@@ -382,17 +389,16 @@ class GuardianActivityScreen extends StatelessWidget {
   }
 }
 
-class BeneficiaryHomeScreen extends StatelessWidget {
-  const BeneficiaryHomeScreen({
-    super.key,
-    required this.isExecutor,
-    required this.onTab,
-  });
-  final bool isExecutor;
+class HeirHomeScreen extends StatelessWidget {
+  const HeirHomeScreen({super.key, required this.onTab});
   final ValueChanged<int> onTab;
   @override
   Widget build(BuildContext context) {
+<<<<<<< Updated upstream
     final title = isExecutor ? 'Executor overview' : 'Your recovery overview';
+=======
+    final store = StoreScope.of(context);
+>>>>>>> Stashed changes
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.fromLTRB(18, 16, 18, 26),
@@ -404,14 +410,12 @@ class BeneficiaryHomeScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      'Your inheritance overview',
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      isExecutor
-                          ? 'Claim guidance, when authorized'
-                          : 'Materials available to you',
+                    const Text(
+                      'Materials and claim progress for your vault',
                       style: const TextStyle(
                         color: AppColors.muted,
                         fontSize: 11,
@@ -420,7 +424,7 @@ class BeneficiaryHomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              PersonAvatar(name: isExecutor ? 'Executor' : 'Beneficiary'),
+              const PersonAvatar(name: 'Heir'),
             ],
           ),
           const SizedBox(height: 14),
@@ -431,6 +435,7 @@ class BeneficiaryHomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+<<<<<<< Updated upstream
                 const StatusBadge(
                   label: 'Access not authorized',
                   tone: BadgeTone.warning,
@@ -439,16 +444,41 @@ class BeneficiaryHomeScreen extends StatelessWidget {
                 const Text(
                   'Nothing has been released.',
                   style: TextStyle(
+=======
+                StatusBadge(
+                  label: store.releaseStage == 0
+                      ? 'Access not authorized'
+                      : 'Stage ${store.releaseStage} available in preview',
+                  tone: store.releaseStage == 0
+                      ? BadgeTone.warning
+                      : BadgeTone.good,
+                ),
+                const SizedBox(height: 13),
+                Text(
+                  store.releaseStage == 0
+                      ? 'Nothing has been released.'
+                      : 'Stage ${store.releaseStage} is open.',
+                  style: const TextStyle(
+>>>>>>> Stashed changes
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 7),
+<<<<<<< Updated upstream
                 const Text(
                   'This local preview has no backend authorization. Protected materials and documents remain unavailable.',
                   style: TextStyle(
                     color: Color(0xFFBBC8BD),
+=======
+                Text(
+                  store.releaseStage == 0
+                      ? 'Protected materials stay locked until the fiduciary checks and owner safety delay are complete.'
+                      : 'This is a local workflow preview. No protected secret or document is stored in the app.',
+                  style: const TextStyle(
+                    color: const Color(0xFFBBC8BD),
+>>>>>>> Stashed changes
                     fontSize: 11,
                     height: 1.5,
                   ),
@@ -460,10 +490,25 @@ class BeneficiaryHomeScreen extends StatelessWidget {
           const SectionTitle('Recovery stages'),
           const SizedBox(height: 8),
           for (final stage in [
+<<<<<<< Updated upstream
             ('01', 'Legal claim packet', 'Executor · claim guidance'),
             ('02', 'Scoped access kit', 'Assigned beneficiaries only'),
             ('03', 'Crypto recovery', 'Additional checks and delays'),
           ])
+=======
+            (
+              '01',
+              'Legal claim packet',
+              'Legal representative · available after execution',
+            ),
+            ('02', 'Scoped access kit', 'Assigned heirs · 7-day safety delay'),
+            (
+              '03',
+              'Crypto recovery',
+              'Custom rules · 30-day delay and milestones',
+            ),
+          ].indexed)
+>>>>>>> Stashed changes
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: SurfaceCard(
@@ -522,6 +567,7 @@ class BeneficiaryHomeScreen extends StatelessWidget {
 class RecoveryMaterialsScreen extends StatelessWidget {
   const RecoveryMaterialsScreen({super.key});
   @override
+<<<<<<< Updated upstream
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Recovery access')),
     body: ListView(
@@ -544,10 +590,40 @@ class RecoveryMaterialsScreen extends StatelessWidget {
                   color: AppColors.muted,
                   fontSize: 11,
                   height: 1.5,
+=======
+  Widget build(BuildContext context) {
+    final store = StoreScope.of(context);
+    return Scaffold(
+      appBar: AppBar(title: const Text('Recovery access')),
+      body: ListView(
+        padding: const EdgeInsets.all(18),
+        children: [
+          const DemoBanner(),
+          const SizedBox(height: 14),
+          SurfaceCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Access conditions',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+>>>>>>> Stashed changes
                 ),
-              ),
-            ],
+                const SizedBox(height: 7),
+                Text(
+                  store.releaseStage >= 2
+                      ? 'The access-kit stage is marked available in the local preview. No password or recovery code is stored in this app.'
+                      : 'The access kit remains locked until Stage 1 execution and the safety time-lock complete.',
+                  style: const TextStyle(
+                    color: AppColors.muted,
+                    fontSize: 11,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
           ),
+<<<<<<< Updated upstream
         ),
         const SizedBox(height: 10),
         const _LockedMaterialCard(
@@ -569,6 +645,35 @@ class RecoveryMaterialsScreen extends StatelessWidget {
       ],
     ),
   );
+=======
+          const SizedBox(height: 10),
+          _LockedMaterialCard(
+            icon: Icons.password_outlined,
+            title: 'Scoped access kit',
+            detail: store.releaseStage >= 2
+                ? 'Stage 2 available · contents not stored here'
+                : 'Stage 2 · time-locked',
+            released: store.releaseStage >= 2,
+          ),
+          const SizedBox(height: 8),
+          _LockedMaterialCard(
+            icon: Icons.currency_bitcoin,
+            title: 'Crypto recovery',
+            detail: store.releaseStage >= 3
+                ? 'Stage 3 available · no key material shown'
+                : 'Stage 3 · additional delay and milestone checks',
+            released: store.releaseStage >= 3,
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'A secure reveal still requires verified backend authorization, step-up authentication, and secure key handling.',
+            style: TextStyle(color: AppColors.muted, fontSize: 10, height: 1.5),
+          ),
+        ],
+      ),
+    );
+  }
+>>>>>>> Stashed changes
 }
 
 class _LockedMaterialCard extends StatelessWidget {
@@ -604,12 +709,20 @@ class _LockedMaterialCard extends StatelessWidget {
             ],
           ),
         ),
+<<<<<<< Updated upstream
         const StatusBadge(label: 'Locked'),
+=======
+        StatusBadge(
+          label: released ? 'Available' : 'Locked',
+          tone: released ? BadgeTone.good : BadgeTone.neutral,
+        ),
+>>>>>>> Stashed changes
       ],
     ),
   );
 }
 
+<<<<<<< Updated upstream
 class DocumentsScreen extends StatefulWidget {
   const DocumentsScreen({super.key, required this.isExecutor});
   final bool isExecutor;
@@ -728,6 +841,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
 }
 
+=======
+>>>>>>> Stashed changes
 class RoleProfileScreen extends StatelessWidget {
   const RoleProfileScreen({
     super.key,

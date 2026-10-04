@@ -19,7 +19,8 @@ class _PeopleScreenState extends State<PeopleScreen> {
     final name = TextEditingController();
     final contact = TextEditingController();
     final formKey = GlobalKey<FormState>();
-    var role = _tab == 0 ? UserRole.guardian : UserRole.beneficiary;
+    var role = _tab == 0 ? UserRole.guardian : UserRole.heir;
+    var isExecutor = false;
     final person = await showDialog<VaultPerson>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
@@ -59,12 +60,8 @@ class _PeopleScreenState extends State<PeopleScreen> {
                       decoration: const InputDecoration(labelText: 'Role'),
                       items: const [
                         DropdownMenuItem(
-                          value: UserRole.executor,
-                          child: Text('Executor'),
-                        ),
-                        DropdownMenuItem(
-                          value: UserRole.beneficiary,
-                          child: Text('Beneficiary'),
+                          value: UserRole.heir,
+                          child: Text('Heir'),
                         ),
                       ],
                       onChanged: (value) {
@@ -72,6 +69,17 @@ class _PeopleScreenState extends State<PeopleScreen> {
                       },
                     ),
                   ],
+                  if (_tab != 0)
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: isExecutor,
+                      onChanged: (value) =>
+                          setDialogState(() => isExecutor = value ?? false),
+                      title: const Text('Also assign as executor'),
+                      subtitle: const Text(
+                        'Executor is a plan assignment, not a mobile sign-in role.',
+                      ),
+                    ),
                   const SizedBox(height: 10),
                   const Text(
                     'This preview saves the contact locally. It does not send an invitation or change backend permissions.',
@@ -96,6 +104,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                     name: name.text.trim(),
                     contact: contact.text.trim(),
                     role: role,
+                    isExecutor: isExecutor,
                   ),
                 );
               },
@@ -132,9 +141,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
               icon: const Icon(Icons.person_add_alt_1_outlined),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: const DemoBanner(),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18),
+            child: DemoBanner(),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 15, 18, 12),

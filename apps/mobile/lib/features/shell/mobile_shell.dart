@@ -32,7 +32,11 @@ class _MobileShellState extends State<MobileShell> {
   }
 
   List<Widget> _pages(UserRole role) => switch (role) {
+<<<<<<< Updated upstream
     UserRole.owner => [
+=======
+    UserRole.client => [
+>>>>>>> Stashed changes
       OwnerHomeScreen(onSelectTab: (value) => setState(() => _index = value)),
       const VaultScreen(),
       const PeopleScreen(),
@@ -53,26 +57,9 @@ class _MobileShellState extends State<MobileShell> {
         onDarkModeChanged: widget.onDarkModeChanged,
       ),
     ],
-    UserRole.beneficiary => [
-      BeneficiaryHomeScreen(
-        isExecutor: false,
-        onTab: (value) => setState(() => _index = value),
-      ),
+    UserRole.heir => [
+      HeirHomeScreen(onTab: (value) => setState(() => _index = value)),
       const RecoveryMaterialsScreen(),
-      const DocumentsScreen(isExecutor: false),
-      RoleProfileScreen(
-        onExitDemo: widget.onExitDemo,
-        isDarkMode: widget.isDarkMode,
-        onDarkModeChanged: widget.onDarkModeChanged,
-      ),
-    ],
-    UserRole.executor => [
-      BeneficiaryHomeScreen(
-        isExecutor: true,
-        onTab: (value) => setState(() => _index = value),
-      ),
-      const RecoveryMaterialsScreen(),
-      const DocumentsScreen(isExecutor: true),
       RoleProfileScreen(
         onExitDemo: widget.onExitDemo,
         isDarkMode: widget.isDarkMode,
@@ -82,7 +69,11 @@ class _MobileShellState extends State<MobileShell> {
   };
 
   List<NavigationDestination> _destinations(UserRole role) => switch (role) {
+<<<<<<< Updated upstream
     UserRole.owner => const [
+=======
+    UserRole.client => const [
+>>>>>>> Stashed changes
       NavigationDestination(
         icon: Icon(Icons.home_outlined),
         selectedIcon: Icon(Icons.home_rounded),
@@ -126,7 +117,7 @@ class _MobileShellState extends State<MobileShell> {
         label: 'Profile',
       ),
     ],
-    UserRole.beneficiary || UserRole.executor => const [
+    UserRole.heir => const [
       NavigationDestination(
         icon: Icon(Icons.home_outlined),
         selectedIcon: Icon(Icons.home_rounded),
@@ -136,11 +127,6 @@ class _MobileShellState extends State<MobileShell> {
         icon: Icon(Icons.lock_outline),
         selectedIcon: Icon(Icons.lock),
         label: 'Recovery',
-      ),
-      NavigationDestination(
-        icon: Icon(Icons.description_outlined),
-        selectedIcon: Icon(Icons.description),
-        label: 'Documents',
       ),
       NavigationDestination(
         icon: Icon(Icons.person_outline),
@@ -156,7 +142,10 @@ class _MobileShellState extends State<MobileShell> {
     final pages = _pages(role);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: IndexedStack(index: _index, children: pages),
+      body: IndexedStack(
+        index: _index.clamp(0, pages.length - 1),
+        children: pages,
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index.clamp(0, pages.length - 1),
         onDestinationSelected: (value) => setState(() => _index = value),

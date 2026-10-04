@@ -117,7 +117,7 @@ class WelcomeScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
-                    onPressed: () => onContinue(UserRole.owner),
+                    onPressed: () => onContinue(UserRole.client),
                     icon: const Icon(Icons.arrow_forward),
                     label: const Text('Explore the owner demo'),
                   ),
@@ -135,11 +135,15 @@ class WelcomeScreen extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
+<<<<<<< Updated upstream
                     for (final role in [
                       UserRole.guardian,
                       UserRole.beneficiary,
                       UserRole.executor,
                     ])
+=======
+                    for (final role in [UserRole.guardian, UserRole.heir])
+>>>>>>> Stashed changes
                       OutlinedButton(
                         onPressed: () => onContinue(role),
                         style: OutlinedButton.styleFrom(
