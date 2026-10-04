@@ -30,6 +30,18 @@ export {
   ClaimDocument,
 } from "@prisma/client";
 
+export interface WebAuthnCredential {
+  id: string;
+  ownerId: string;
+  credentialId: string;
+  publicKey: string;
+  counter: bigint;
+  transports: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lastUsedAt: Date | null;
+}
+
 /**
  * Sanitizes input to guarantee zero secrets leak into the database.
  */

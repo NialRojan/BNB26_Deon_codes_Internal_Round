@@ -122,3 +122,13 @@ export interface IAuditService {
   getAuditEventsByEntity(entityId: string, limit?: number, offset?: number): Promise<AuditEvent[]>;
   getAuditEventsByOwner(ownerId: string, limit?: number, offset?: number): Promise<AuditEvent[]>;
 }
+
+export interface IWebAuthnService {
+  generateRegistrationOptions(ownerId: string): Promise<any>;
+  verifyRegistrationResponse(ownerId: string, response: any): Promise<{ verified: boolean; credentialId: string }>;
+  generateAuthenticationOptions(ownerId: string): Promise<any>;
+  verifyAuthenticationResponse(ownerId: string, response: any): Promise<{ verified: boolean; heartbeatEvent: HeartbeatEvent }>;
+  listCredentials(ownerId: string): Promise<Array<{ id: string; credentialId: string; transports: string[]; createdAt: Date; lastUsedAt: Date | null }>>;
+  deleteCredential(ownerId: string, credentialId: string): Promise<boolean>;
+}
+

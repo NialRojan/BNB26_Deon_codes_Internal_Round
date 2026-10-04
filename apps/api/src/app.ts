@@ -6,6 +6,13 @@ import { apiRateLimiter } from "./middleware/rateLimiter.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import apiRoutes from "./routes/index.js";
 
+// Ensure BigInt can be safely serialized to JSON (for Prisma BigInt columns like WebAuthn counter)
+if (!(BigInt.prototype as any).toJSON) {
+  (BigInt.prototype as any).toJSON = function () {
+    return Number(this);
+  };
+}
+
 export const createApp = (): Express => {
   const app = express();
 

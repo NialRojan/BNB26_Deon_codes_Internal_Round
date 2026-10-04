@@ -8,6 +8,7 @@ import { AuditService } from "./auditService.js";
 import { HeartbeatChannel, HeartbeatEventType } from "../types/domain.js";
 import { ValidationError, ConflictError } from "../errors/AppError.js";
 import { logger } from "../config/logger.js";
+import { BiometricChannel } from "../heartbeat/channels/biometric.js";
 
 const VALID_CHANNELS = ["WHATSAPP", "PUSH", "EMAIL", "APP_CHECKIN", "BIOMETRIC", "CUSTOM"];
 
@@ -40,6 +41,27 @@ export class HeartbeatService implements IHeartbeatService {
       throw new ValidationError(
         `Invalid channel '${data.channel}'. Allowed channels: ${VALID_CHANNELS.join(", ")}`
       );
+    }
+
+    // Biometric check-in CANNOT be bypassed via unverified generic heartbeat pings.
+    // Must be verified cryptographically via WebAuthn assertion through BiometricChannel.
+    if (channelUpper === "BIOMETRIC") {
+      const meta = (data.metadata || {}) as any;
+      if (!meta.credentialId || !meta.signature || !meta.clientDataJson || !meta.authenticatorData) {
+        throw new ValidationError(
+          "Biometric heartbeats require cryptographic WebAuthn assertion proof (credentialId, signature, clientDataJson, authenticatorData). Submit via /webauthn/authenticate/verify."
+        );
+      }
+      return BiometricChannel.recordBiometricCheckIn({
+        ownerId: data.ownerId,
+        credentialId: meta.credentialId,
+        signature: meta.signature,
+        clientDataJson: meta.clientDataJson,
+        authenticatorData: meta.authenticatorData,
+        challenge: meta.challenge,
+        userHandle: meta.userHandle,
+        metadata: data.metadata ?? undefined,
+      });
     }
 
     // 3. Validate eventType

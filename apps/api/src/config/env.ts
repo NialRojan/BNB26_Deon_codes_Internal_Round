@@ -27,6 +27,10 @@ const envSchema = z.object({
   ANCHOR_PRIVATE_KEY: z.string().optional(),
   ANCHOR_RPC_URL: z.string().optional(),
   ANCHOR_INTERVAL_MS: z.coerce.number().default(300000),
+  // WebAuthn / Biometric Relying Party (RP) configuration
+  WEBAUTHN_RP_NAME: z.string().default("Heirloom"),
+  WEBAUTHN_RP_ID: z.string().default("localhost"),
+  WEBAUTHN_ORIGIN: z.string().default("http://localhost:5173"),
 });
 
 export const config = envSchema.parse(process.env);

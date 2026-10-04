@@ -18,6 +18,7 @@ model Owner {
   heartbeatEvents   HeartbeatEvent[]
   recoveryAttempts  RecoveryAttempt[]
   alerts            Alert[]
+  webAuthnCredentials WebAuthnCredential[]
 
   @@index([status])
 }
@@ -54,6 +55,22 @@ model HeartbeatEvent {
   owner           Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@index([ownerId, timestamp])
+}
+
+model WebAuthnCredential {
+  id           String    @id @default(uuid())
+  ownerId      String
+  credentialId String    @unique
+  publicKey    String
+  counter      BigInt    @default(0)
+  transports   String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastUsedAt   DateTime?
+
+  owner        Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
 }
 
 model RecoveryAttempt {

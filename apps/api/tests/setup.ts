@@ -18,9 +18,17 @@ beforeEach(async () => {
   await prisma.riskEvent.deleteMany({});
   await prisma.guardianAttestation.deleteMany({});
   await prisma.alert.deleteMany({});
+  try {
+    await (prisma as any).claimDocument?.deleteMany({});
+  } catch {}
   await prisma.recoveryAttempt.deleteMany({});
   await prisma.heartbeatEvent.deleteMany({});
   await prisma.ownerAvailability.deleteMany({});
+  try {
+    await (prisma as any).webAuthnCredential?.deleteMany({});
+  } catch {
+    // Ignore if table not yet migrated in test db
+  }
   await prisma.owner.deleteMany({});
 });
 

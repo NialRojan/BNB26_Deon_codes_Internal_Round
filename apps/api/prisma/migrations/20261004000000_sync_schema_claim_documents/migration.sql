@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "ClaimDocument" (
+CREATE TABLE IF NOT EXISTS "ClaimDocument" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "recoveryAttemptId" TEXT NOT NULL,
     "documentType" TEXT NOT NULL,
@@ -44,10 +44,10 @@ PRAGMA foreign_keys=ON;
 PRAGMA defer_foreign_keys=OFF;
 
 -- CreateIndex
-CREATE INDEX "ClaimDocument_recoveryAttemptId_idx" ON "ClaimDocument"("recoveryAttemptId");
+CREATE INDEX IF NOT EXISTS "ClaimDocument_recoveryAttemptId_idx" ON "ClaimDocument"("recoveryAttemptId");
 
 -- CreateIndex
-CREATE INDEX "ClaimDocument_verificationStatus_idx" ON "ClaimDocument"("verificationStatus");
+CREATE INDEX IF NOT EXISTS "ClaimDocument_verificationStatus_idx" ON "ClaimDocument"("verificationStatus");
 
 -- CreateIndex
-CREATE INDEX "Alert_ownerId_type_channel_status_idx" ON "Alert"("ownerId", "type", "channel", "status");
+CREATE INDEX IF NOT EXISTS "Alert_ownerId_type_channel_status_idx" ON "Alert"("ownerId", "type", "channel", "status");

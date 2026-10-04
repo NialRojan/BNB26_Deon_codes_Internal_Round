@@ -73,7 +73,8 @@ export type AuditEntityType =
   | "RecoveryAttempt"
   | "GuardianAttestation"
   | "RiskEvent"
-  | "Alert";
+  | "Alert"
+  | "WebAuthnCredential";
 
 export interface AuthenticatedUser {
   id: string; // The owner ID, guardian ID, or system ID

@@ -11,13 +11,54 @@ export const AvailabilityTransitionSchema = z.object({
 });
 
 export const CreateHeartbeatEventSchema = z.object({
-  channel: z.enum(["WHATSAPP", "PUSH", "EMAIL", "APP_CHECKIN", "CUSTOM"]),
+  channel: z.enum(["WHATSAPP", "PUSH", "EMAIL", "APP_CHECKIN", "BIOMETRIC", "CUSTOM"]),
   eventType: z.string().min(1, "eventType is required"),
   timestamp: z.coerce.date().optional(),
   responseStatus: z.enum(["RECEIVED", "PENDING", "EXPIRED", "FAILED"]).optional(),
   externalEventId: z.string().min(1).optional(),
   metadata: z.record(z.unknown()).optional(),
 });
+
+export const VerifyRegistrationSchema = z.object({
+  id: z.string().min(1, "Credential ID is required"),
+  rawId: z.string().optional(),
+  response: z.object({
+    clientDataJSON: z.string().min(1, "clientDataJSON is required"),
+    attestationObject: z.string().min(1, "attestationObject is required"),
+    authenticatorData: z.string().optional(),
+    transports: z.array(z.string()).optional(),
+    publicKeyAlgorithm: z.number().optional(),
+    publicKey: z.string().optional(),
+  }),
+  authenticatorAttachment: z.enum(["platform", "cross-platform"]).optional(),
+  clientExtensionResults: z.record(z.unknown()).optional(),
+  type: z.literal("public-key").default("public-key"),
+});
+
+export const VerifyAuthenticationSchema = z.union([
+  z.object({
+    id: z.string().min(1, "Credential ID is required"),
+    rawId: z.string().optional(),
+    response: z.object({
+      clientDataJSON: z.string().min(1, "clientDataJSON is required"),
+      authenticatorData: z.string().min(1, "authenticatorData is required"),
+      signature: z.string().min(1, "signature is required"),
+      userHandle: z.string().optional(),
+    }),
+    type: z.literal("public-key").default("public-key"),
+    clientExtensionResults: z.record(z.unknown()).optional(),
+    metadata: z.record(z.unknown()).optional(),
+  }),
+  z.object({
+    credentialId: z.string().min(1, "credentialId is required"),
+    signature: z.string().min(1, "signature is required"),
+    clientDataJson: z.string().min(1, "clientDataJson is required"),
+    authenticatorData: z.string().min(1, "authenticatorData is required"),
+    challenge: z.string().optional(),
+    userHandle: z.string().optional(),
+    metadata: z.record(z.unknown()).optional(),
+  }),
+]);
 
 export const InitiateRecoverySchema = z.object({
   ownerId: z.string().min(1, "ownerId is required"),

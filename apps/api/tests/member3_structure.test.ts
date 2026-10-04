@@ -3,7 +3,7 @@ import request from "supertest";
 import { app } from "../src/server.js";
 import { db } from "../src/db/schema.js";
 import { PushChannel } from "../src/heartbeat/channels/push.js";
-import { BiometricChannel } from "../src/heartbeat/channels/biometric.js";
+import { BiometricChannel, setWebAuthnVerifier, WebAuthnVerifier } from "../src/heartbeat/channels/biometric.js";
 import { MessagingBotChannel } from "../src/heartbeat/channels/messagingBot.js";
 import { MissedPingTracker } from "../src/heartbeat/missedPingTracker.js";
 import { HeartbeatScheduler } from "../src/heartbeat/scheduler.js";
@@ -43,15 +43,19 @@ describe("Member 3 Module Suite (Heartbeat, Watch, Fraud, Documents, Chain, Rout
     });
     expect(pushVerify.responseStatus).toBe("RECEIVED");
 
-    // 3. Test BiometricChannel
+    // 3. Test BiometricChannel with an isolated test verifier fixture
+    setWebAuthnVerifier({
+      verify: async () => true,
+    });
     const bioResult = await BiometricChannel.recordBiometricCheckIn({
       ownerId: owner.id,
       credentialId: "cred_webauthn_passkey_99",
-      signature: "0x_mock_sig",
+      signature: "0x_test_sig",
       clientDataJson: "{}",
       authenticatorData: "{}",
     });
     expect(bioResult.channel).toBe("BIOMETRIC");
+    setWebAuthnVerifier(new WebAuthnVerifier());
 
     // 4. Test MessagingBotChannel
     const botResult = await MessagingBotChannel.dispatchBotPing({

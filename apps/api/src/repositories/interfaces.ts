@@ -127,3 +127,31 @@ export interface IAuditRepository {
   findManyByEntityId(entityId: string, limit?: number, offset?: number): Promise<AuditEvent[]>;
   findManyByOwnerId(ownerId: string, limit?: number, offset?: number): Promise<AuditEvent[]>;
 }
+
+export interface WebAuthnCredentialRecord {
+  id: string;
+  ownerId: string;
+  credentialId: string;
+  publicKey: string;
+  counter: bigint;
+  transports: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lastUsedAt: Date | null;
+}
+
+export interface IWebAuthnRepository {
+  create(data: {
+    ownerId: string;
+    credentialId: string;
+    publicKey: string;
+    counter?: bigint | number;
+    transports?: string[] | null;
+  }): Promise<WebAuthnCredentialRecord>;
+  findById(id: string): Promise<WebAuthnCredentialRecord | null>;
+  findByCredentialId(credentialId: string): Promise<WebAuthnCredentialRecord | null>;
+  findManyByOwnerId(ownerId: string): Promise<WebAuthnCredentialRecord[]>;
+  updateCounterAndUsage(id: string, counter: bigint | number, lastUsedAt?: Date): Promise<WebAuthnCredentialRecord>;
+  deleteByCredentialId(ownerId: string, credentialId: string): Promise<boolean>;
+}
+

@@ -11,8 +11,12 @@ import {
   CancelRecoverySchema,
   PaginationQuerySchema,
 } from "../validation/schemas.js";
+import webauthnRoutes from "./webauthnRoutes.js";
 
 const router = Router();
+
+// Mount WebAuthn / Biometric ceremony routes
+router.use("/:ownerId/webauthn", webauthnRoutes);
 
 // 1. Vault Setup / Registration
 router.post(

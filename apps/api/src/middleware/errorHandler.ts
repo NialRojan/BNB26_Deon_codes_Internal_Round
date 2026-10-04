@@ -21,6 +21,7 @@ export const errorHandler = (
 
     return res.status(err.statusCode).json({
       success: false,
+      message: err.message,
       error: {
         code: err.code,
         message: err.message,
@@ -41,6 +42,7 @@ export const errorHandler = (
       const target = Array.isArray(err.meta?.target) ? err.meta.target.join(", ") : "resource";
       return res.status(409).json({
         success: false,
+        message: `A record with this ${target} already exists.`,
         error: {
           code: "DUPLICATE_ENTRY",
           message: `A record with this ${target} already exists.`,
@@ -51,6 +53,7 @@ export const errorHandler = (
     if (err.code === "P2025") {
       return res.status(404).json({
         success: false,
+        message: "The requested entity was not found in the database.",
         error: {
           code: "NOT_FOUND",
           message: "The requested entity was not found in the database.",
@@ -60,6 +63,7 @@ export const errorHandler = (
 
     return res.status(400).json({
       success: false,
+      message: "A database constraint violation occurred.",
       error: {
         code: "DATABASE_ERROR",
         message: "A database constraint violation occurred.",
@@ -71,6 +75,7 @@ export const errorHandler = (
   if (err instanceof SyntaxError && "body" in err) {
     return res.status(400).json({
       success: false,
+      message: "Malformed JSON payload provided.",
       error: {
         code: "INVALID_JSON",
         message: "Malformed JSON payload provided.",
@@ -87,6 +92,7 @@ export const errorHandler = (
 
   return res.status(500).json({
     success: false,
+    message: "An internal server error occurred.",
     error: {
       code: "INTERNAL_SERVER_ERROR",
       message: "An internal server error occurred.",
